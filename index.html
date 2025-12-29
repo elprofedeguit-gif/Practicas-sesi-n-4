@@ -6,149 +6,121 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root{
-  --bg:#141414;
-  --green:#00b84f;
-  --green-strong:#3dff8f;
-  --orange:#ff9f1c;
-  --orange-strong:#ff7a00;
-  --amp:#5bc0eb;
-  --gray:#888;
-  --gray-dark:#555;
+body {
+  margin: 0;
+  background: #141414;
+  font-family: Arial, sans-serif;
+  color: #fff;
 }
 
-body{
-  margin:0;
-  background:var(--bg);
-  color:white;
-  font-family:Arial, sans-serif;
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.page{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
+.header {
+  margin-top: 24px;
+  text-align: center;
 }
 
-.header{
-  margin-top:20px;
-  text-align:center;
+.header img {
+  width: 150px;
+  margin-bottom: 12px;
 }
 
-.header h1{
-  margin:10px 0 4px;
-  color:#9effa0;
-  font-weight:600;
+h1 {
+  margin: 6px 0 0;
+  font-size: 26px;
 }
 
-.subtitle{
-  color:#c9a9ff;
-  font-style:italic;
-  font-size:15px;
+.subtitle {
+  font-size: 15px;
+  font-style: italic;
+  color: #b98bff;
 }
 
-.exercise{
-  margin-top:40px;
-  width:100%;
-  max-width:900px;
-  text-align:center;
+.exercise {
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.arrows{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:12px;
+.pulse {
+  display: flex;
+  gap: 14px;
+  font-size: 42px;
+  margin-bottom: 20px;
 }
 
-.arrow{
-  width:12%;
-  font-size:80px;
-  color:var(--gray-dark);
+.pulse span {
+  color: #555;
+  transition: 0.1s;
 }
 
-.arrow.active{
-  color:var(--green);
+.pulse .active {
+  color: orange;
 }
 
-.arrow.accent{
-  color:var(--green-strong);
+.sub {
+  color: #666;
+  font-size: 26px;
+  margin-left: 4px;
 }
 
-.pulse{
-  display:flex;
-  justify-content:space-between;
+.arrows {
+  display: flex;
+  gap: 40px;
+  font-size: 64px;
+  margin: 30px 0;
 }
 
-.pulse span{
-  width:12%;
-  font-size:64px;
-  color:var(--gray);
+.arrow {
+  color: #333;
+  transition: 0.1s;
 }
 
-.pulse .num.active{
-  color:var(--orange);
+.arrow.active {
+  color: #00e676;
 }
 
-.pulse .num.accent{
-  color:var(--orange-strong);
+.controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 14px;
 }
 
-.pulse .amp{
-  color:#5bc0eb;
+button {
+  background: #00c853;
+  color: #000;
+  border: none;
+  padding: 14px 28px;
+  font-size: 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
 }
 
-.pulse .amp.active{
-  color:#7fd6ff;
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(0,200,83,0.6);
 }
 
-.controls{
-  margin-top:40px;
+button:active {
+  transform: scale(0.96);
 }
 
-.controls label{
-  display:block;
-  margin-bottom:6px;
+.range {
+  margin-top: 22px;
+  width: 260px;
 }
 
-input[type=range]{
-  width:260px;
-}
-
-button{
-  margin:10px;
-  padding:14px 30px;
-  font-size:15px;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-}
-
-.play{
-  background:#000;
-  color:white;
-}
-
-.stop{
-  background:#333;
-  color:white;
-}
-
-.toggle{
-  background:#1e1e1e;
-  color:white;
-  border:1px solid var(--green);
-}
-
-.info{
-  margin-top:20px;
-  font-size:14px;
-  color:#aaa;
-}
-
-@media(max-width:600px){
-  .arrow{ font-size:60px; }
-  .pulse span{ font-size:46px; }
+.range label {
+  display: block;
+  text-align: center;
+  margin-bottom: 6px;
 }
 </style>
 </head>
@@ -157,159 +129,115 @@ button{
 <div class="page">
 
   <div class="header">
-    <h1>Prácticas guiadas – Sesión 4</h1>
-    <div class="subtitle">El ritmo empieza a ordenarse</div>
+    <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png">
+    <h1>Sesión 4</h1>
+    <div class="subtitle">Rasgueo base</div>
   </div>
 
   <div class="exercise">
 
-    <!-- Flechas -->
-    <div class="arrows" id="arrows">
-      <div class="arrow">↓</div><div class="arrow">↑</div>
-      <div class="arrow">↓</div><div class="arrow">↑</div>
-      <div class="arrow">↓</div><div class="arrow">↑</div>
-      <div class="arrow">↓</div><div class="arrow">↑</div>
+    <div class="pulse">
+      <span id="p1">1</span>
+      <span class="sub">&</span>
+      <span id="p2">2</span>
+      <span class="sub">&</span>
+      <span id="p3">3</span>
+      <span class="sub">&</span>
+      <span id="p4">4</span>
     </div>
 
-    <!-- Pulso -->
-    <div class="pulse" id="pulse">
-      <span class="num">1</span>
-      <span class="amp">&</span>
-      <span class="num">2</span>
-      <span class="amp">&</span>
-      <span class="num">3</span>
-      <span class="amp">&</span>
-      <span class="num">4</span>
-      <span class="amp">&</span>
+    <div class="arrows">
+      <div id="down" class="arrow">↓</div>
+      <div id="up" class="arrow">↑</div>
     </div>
 
-    <!-- Controles -->
     <div class="controls">
+      <button onclick="togglePlay()">Play / Stop</button>
+      <button onclick="togglePulse()">Pulso ON / OFF</button>
+    </div>
+
+    <div class="range">
       <label>BPM: <span id="bpmVal">40</span></label>
       <input type="range" min="30" max="70" value="40" id="bpm">
-
-      <div>
-        <button class="toggle" id="pulseToggle">Pulso ON</button>
-      </div>
-
-      <div>
-        <button class="play" id="playBtn">Play</button>
-        <button class="stop" id="stopBtn">Stop</button>
-      </div>
-
-      <div class="info">Flechas = rasgueo</div>
     </div>
 
   </div>
 </div>
 
 <script>
-let bpmInput = document.getElementById("bpm");
-let bpmVal = document.getElementById("bpmVal");
-let arrows = document.querySelectorAll(".arrow");
-let pulseEls = document.querySelectorAll(".pulse span");
-let playBtn = document.getElementById("playBtn");
-let stopBtn = document.getElementById("stopBtn");
-let pulseToggle = document.getElementById("pulseToggle");
-
-let pulsoOn = true;
-let timer = null;
+let playing = false;
+let withPulse = true;
 let step = 0;
-let state = "IDLE";
+let timer;
 
-bpmInput.oninput = () => bpmVal.textContent = bpmInput.value;
+const bpmSlider = document.getElementById("bpm");
+const bpmVal = document.getElementById("bpmVal");
 
-pulseToggle.onclick = () => {
-  pulsoOn = !pulsoOn;
-  pulseToggle.textContent = pulsoOn ? "Pulso ON" : "Pulso OFF";
-};
+bpmSlider.oninput = () => bpmVal.textContent = bpmSlider.value;
 
-let ctx;
-function ensureAudio(){
-  if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
-  if(ctx.state === "suspended") ctx.resume();
-}
-
-function pulseSound(accent=false){
-  if(!pulsoOn) return;
-  const o = ctx.createOscillator();
-  const g = ctx.createGain();
-  o.frequency.value = 1200;
-  g.gain.value = accent ? 0.12 : 0.07;
-  o.connect(g); g.connect(ctx.destination);
-  o.start(); o.stop(ctx.currentTime + 0.04);
-}
-
-function rasgueoSound(accent=false, dur){
-  const o = ctx.createOscillator();
-  const g = ctx.createGain();
-  o.frequency.value = 350;
-  g.gain.value = accent ? 0.14 : 0.1;
-  o.connect(g); g.connect(ctx.destination);
+const clickCtx = new AudioContext();
+const clickOsc = () => {
+  const o = clickCtx.createOscillator();
+  const g = clickCtx.createGain();
+  o.frequency.value = 900;
+  g.gain.value = 0.2;
+  o.connect(g).connect(clickCtx.destination);
   o.start();
-  o.stop(ctx.currentTime + dur/1000);
-}
-
-function clearVisuals(){
-  arrows.forEach(a=>a.className="arrow");
-  pulseEls.forEach(p=>p.className=p.classList.contains("amp")?"amp":"num");
-}
-
-function startCountIn(){
-  let corchea = (60000/bpmInput.value)/2;
-  let i = 0;
-  timer = setInterval(()=>{
-    clearVisuals();
-    pulseEls[i].classList.add("active");
-    if(i===0) pulseEls[i].classList.add("accent");
-    pulseSound(i===0);
-    i++;
-    if(i>=8){
-      clearInterval(timer);
-      startPlay();
-    }
-  }, corchea);
-}
-
-function startPlay(){
-  state="PLAYING";
-  step=0;
-  let corchea = (60000/bpmInput.value)/2;
-
-  timer = setInterval(()=>{
-    clearVisuals();
-
-    arrows[step].classList.add("active");
-    if(step===0) arrows[step].classList.add("accent");
-
-    pulseEls[step].classList.add("active");
-    if(step===0 && pulseEls[step].classList.contains("num")){
-      pulseEls[step].classList.add("accent");
-    }
-
-    if(step%2===0) pulseSound(step===0);
-    rasgueoSound(step===0, corchea);
-
-    step = (step+1)%8;
-  }, corchea);
-}
-
-playBtn.onclick = ()=>{
-  if(state!=="IDLE") return;
-  ensureAudio();
-  state="START";
-  if(pulsoOn){
-    startCountIn();
-  }else{
-    startPlay();
-  }
+  o.stop(clickCtx.currentTime + 0.05);
 };
 
-stopBtn.onclick = ()=>{
-  clearInterval(timer);
-  state="IDLE";
+function strumSound() {
+  const o = clickCtx.createOscillator();
+  const g = clickCtx.createGain();
+  o.type = "triangle";
+  o.frequency.value = 220;
+  g.gain.value = 0.12;
+  o.connect(g).connect(clickCtx.destination);
+  o.start();
+  o.stop(clickCtx.currentTime + 0.12);
+}
+
+function clearVisuals() {
+  document.querySelectorAll(".pulse span").forEach(e=>e.classList.remove("active"));
+  document.querySelectorAll(".arrow").forEach(e=>e.classList.remove("active"));
+}
+
+function tick() {
   clearVisuals();
-};
+
+  if (withPulse) {
+    document.getElementById("p" + ((step % 4) + 1)).classList.add("active");
+    clickOsc();
+  }
+
+  if (step % 2 === 0) {
+    document.getElementById("down").classList.add("active");
+    strumSound();
+  } else {
+    document.getElementById("up").classList.add("active");
+    strumSound();
+  }
+
+  step++;
+}
+
+function togglePlay() {
+  if (playing) {
+    clearInterval(timer);
+    playing = false;
+    clearVisuals();
+  } else {
+    step = 0;
+    const interval = 60000 / bpmSlider.value / 2;
+    timer = setInterval(tick, interval);
+    playing = true;
+  }
+}
+
+function togglePulse() {
+  withPulse = !withPulse;
+}
 </script>
+
 </body>
 </html>
