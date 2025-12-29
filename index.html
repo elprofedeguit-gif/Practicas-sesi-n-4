@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sesión 4 – Rasgueo base</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#141414;
+  --green:#00b84f;
+  --green-strong:#3dff8f;
+  --orange:#ff9f1c;
+  --orange-strong:#ff7a00;
+  --amp:#5bc0eb;
+  --gray:#888;
+  --gray-dark:#555;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:white;
+  font-family:Arial, sans-serif;
+}
+
+.page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.header{
+  margin-top:20px;
+  text-align:center;
+}
+
+.header h1{
+  margin:10px 0 4px;
+  color:#9effa0;
+  font-weight:600;
+}
+
+.subtitle{
+  color:#c9a9ff;
+  font-style:italic;
+  font-size:15px;
+}
+
+.exercise{
+  margin-top:40px;
+  width:100%;
+  max-width:900px;
+  text-align:center;
+}
+
+.arrows{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+
+.arrow{
+  width:12%;
+  font-size:80px;
+  color:var(--gray-dark);
+}
+
+.arrow.active{
+  color:var(--green);
+}
+
+.arrow.accent{
+  color:var(--green-strong);
+}
+
+.pulse{
+  display:flex;
+  justify-content:space-between;
+}
+
+.pulse span{
+  width:12%;
+  font-size:64px;
+  color:var(--gray);
+}
+
+.pulse .num.active{
+  color:var(--orange);
+}
+
+.pulse .num.accent{
+  color:var(--orange-strong);
+}
+
+.pulse .amp{
+  color:#5bc0eb;
+}
+
+.pulse .amp.active{
+  color:#7fd6ff;
+}
+
+.controls{
+  margin-top:40px;
+}
+
+.controls label{
+  display:block;
+  margin-bottom:6px;
+}
+
+input[type=range]{
+  width:260px;
+}
+
+button{
+  margin:10px;
+  padding:14px 30px;
+  font-size:15px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+}
+
+.play{
+  background:#000;
+  color:white;
+}
+
+.stop{
+  background:#333;
+  color:white;
+}
+
+.toggle{
+  background:#1e1e1e;
+  color:white;
+  border:1px solid var(--green);
+}
+
+.info{
+  margin-top:20px;
+  font-size:14px;
+  color:#aaa;
+}
+
+@media(max-width:600px){
+  .arrow{ font-size:60px; }
+  .pulse span{ font-size:46px; }
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>Prácticas guiadas – Sesión 4</h1>
+    <div class="subtitle">El ritmo empieza a ordenarse</div>
+  </div>
+
+  <div class="exercise">
+
+    <!-- Flechas -->
+    <div class="arrows" id="arrows">
+      <div class="arrow">↓</div><div class="arrow">↑</div>
+      <div class="arrow">↓</div><div class="arrow">↑</div>
+      <div class="arrow">↓</div><div class="arrow">↑</div>
+      <div class="arrow">↓</div><div class="arrow">↑</div>
+    </div>
+
+    <!-- Pulso -->
+    <div class="pulse" id="pulse">
+      <span class="num">1</span>
+      <span class="amp">&</span>
+      <span class="num">2</span>
+      <span class="amp">&</span>
+      <span class="num">3</span>
+      <span class="amp">&</span>
+      <span class="num">4</span>
+      <span class="amp">&</span>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+      <label>BPM: <span id="bpmVal">40</span></label>
+      <input type="range" min="30" max="70" value="40" id="bpm">
+
+      <div>
+        <button class="toggle" id="pulseToggle">Pulso ON</button>
+      </div>
+
+      <div>
+        <button class="play" id="playBtn">Play</button>
+        <button class="stop" id="stopBtn">Stop</button>
+      </div>
+
+      <div class="info">Flechas = rasgueo</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let bpmInput = document.getElementById("bpm");
+let bpmVal = document.getElementById("bpmVal");
+let arrows = document.querySelectorAll(".arrow");
+let pulseEls = document.querySelectorAll(".pulse span");
+let playBtn = document.getElementById("playBtn");
+let stopBtn = document.getElementById("stopBtn");
+let pulseToggle = document.getElementById("pulseToggle");
+
+let pulsoOn = true;
+let timer = null;
+let step = 0;
+let state = "IDLE";
+
+bpmInput.oninput = () => bpmVal.textContent = bpmInput.value;
+
+pulseToggle.onclick = () => {
+  pulsoOn = !pulsoOn;
+  pulseToggle.textContent = pulsoOn ? "Pulso ON" : "Pulso OFF";
+};
+
+let ctx;
+function ensureAudio(){
+  if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
+  if(ctx.state === "suspended") ctx.resume();
+}
+
+function pulseSound(accent=false){
+  if(!pulsoOn) return;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.frequency.value = 1200;
+  g.gain.value = accent ? 0.12 : 0.07;
+  o.connect(g); g.connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime + 0.04);
+}
+
+function rasgueoSound(accent=false, dur){
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.frequency.value = 350;
+  g.gain.value = accent ? 0.14 : 0.1;
+  o.connect(g); g.connect(ctx.destination);
+  o.start();
+  o.stop(ctx.currentTime + dur/1000);
+}
+
+function clearVisuals(){
+  arrows.forEach(a=>a.className="arrow");
+  pulseEls.forEach(p=>p.className=p.classList.contains("amp")?"amp":"num");
+}
+
+function startCountIn(){
+  let corchea = (60000/bpmInput.value)/2;
+  let i = 0;
+  timer = setInterval(()=>{
+    clearVisuals();
+    pulseEls[i].classList.add("active");
+    if(i===0) pulseEls[i].classList.add("accent");
+    pulseSound(i===0);
+    i++;
+    if(i>=8){
+      clearInterval(timer);
+      startPlay();
+    }
+  }, corchea);
+}
+
+function startPlay(){
+  state="PLAYING";
+  step=0;
+  let corchea = (60000/bpmInput.value)/2;
+
+  timer = setInterval(()=>{
+    clearVisuals();
+
+    arrows[step].classList.add("active");
+    if(step===0) arrows[step].classList.add("accent");
+
+    pulseEls[step].classList.add("active");
+    if(step===0 && pulseEls[step].classList.contains("num")){
+      pulseEls[step].classList.add("accent");
+    }
+
+    if(step%2===0) pulseSound(step===0);
+    rasgueoSound(step===0, corchea);
+
+    step = (step+1)%8;
+  }, corchea);
+}
+
+playBtn.onclick = ()=>{
+  if(state!=="IDLE") return;
+  ensureAudio();
+  state="START";
+  if(pulsoOn){
+    startCountIn();
+  }else{
+    startPlay();
+  }
+};
+
+stopBtn.onclick = ()=>{
+  clearInterval(timer);
+  state="IDLE";
+  clearVisuals();
+};
+</script>
+</body>
+</html>
