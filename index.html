@@ -58,20 +58,23 @@ h1 {
   font-size: 22px;
 }
 
-.rhythm {
+/* ===== GRID DE PULSOS ===== */
+
+.grid {
   display: flex;
-  gap: 28px;
+  gap: 40px;
   margin-top: 30px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
   align-items: center;
 }
 
-.pulse {
-  text-align: center;
-}
-
 .number {
-  font-size: 40px;
-  margin-bottom: 6px;
+  font-size: 42px;
+  margin-bottom: 4px;
 }
 
 .number.active {
@@ -81,26 +84,24 @@ h1 {
 .and {
   font-size: 20px;
   color: var(--gray);
+  margin-bottom: 14px;
 }
 
 .and.active {
   color: #ccc;
 }
 
-.arrows {
-  display: flex;
-  gap: 28px;
-  margin-top: 10px;
-}
-
 .arrow {
-  font-size: 36px;
+  font-size: 38px;
   color: #555;
+  margin: 6px 0;
 }
 
 .arrow.active {
   color: var(--green);
 }
+
+/* ===== CONTROLES ===== */
 
 .controls {
   margin-top: 30px;
@@ -118,7 +119,7 @@ button {
   font-size: 16px;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.1s ease;
+  transition: transform 0.1s ease;
 }
 
 button:active {
@@ -137,6 +138,7 @@ input[type="range"] {
 @media (max-width: 600px) {
   .number { font-size: 32px; }
   .arrow { font-size: 30px; }
+  .grid { gap: 24px; }
 }
 </style>
 </head>
@@ -152,26 +154,40 @@ input[type="range"] {
 
 <div class="exercise-title">Rasgueo base – Corcheas</div>
 
-<!-- PULSO -->
-<div class="rhythm" id="numbers">
-  <div class="pulse"><div class="number">1</div><div class="and">&</div></div>
-  <div class="pulse"><div class="number">2</div><div class="and">&</div></div>
-  <div class="pulse"><div class="number">3</div><div class="and">&</div></div>
-  <div class="pulse"><div class="number">4</div><div class="and">&</div></div>
-</div>
+<!-- GRID -->
+<div class="grid">
+  <div class="column">
+    <div class="number">1</div>
+    <div class="and">&</div>
+    <div class="arrow">↓</div>
+    <div class="arrow">↑</div>
+  </div>
 
-<!-- FLECHAS -->
-<div class="arrows" id="arrows">
-  <div class="arrow">↓</div><div class="arrow">↑</div>
-  <div class="arrow">↓</div><div class="arrow">↑</div>
-  <div class="arrow">↓</div><div class="arrow">↑</div>
-  <div class="arrow">↓</div><div class="arrow">↑</div>
+  <div class="column">
+    <div class="number">2</div>
+    <div class="and">&</div>
+    <div class="arrow">↓</div>
+    <div class="arrow">↑</div>
+  </div>
+
+  <div class="column">
+    <div class="number">3</div>
+    <div class="and">&</div>
+    <div class="arrow">↓</div>
+    <div class="arrow">↑</div>
+  </div>
+
+  <div class="column">
+    <div class="number">4</div>
+    <div class="and">&</div>
+    <div class="arrow">↓</div>
+    <div class="arrow">↑</div>
+  </div>
 </div>
 
 <div class="controls">
   <button id="play">Play</button>
   <button id="stop">Stop</button>
-  <button id="togglePulse">Pulso ON</button>
 </div>
 
 <div class="bpm">
@@ -182,54 +198,58 @@ input[type="range"] {
 </div>
 
 <script>
-let audioCtx;
+let audioReady = false;
 let timer;
 let step = 0;
 let playing = false;
-let pulseOn = true;
+
+/* ===== TUS RASGUEOS ===== */
+const downSound = new Audio("down.wav");
+const upSound   = new Audio("up.wav");
+
+downSound.volume = 0.9; // ↓ más acento
+upSound.volume   = 0.65; // ↑ más suave
+
+function playDown() {
+  downSound.currentTime = 0;
+  downSound.play();
+}
+
+function playUp() {
+  upSound.currentTime = 0;
+  upSound.play();
+}
 
 const numbers = document.querySelectorAll(".number");
-const ands = document.querySelectorAll(".and");
-const arrows = document.querySelectorAll(".arrow");
+const ands    = document.querySelectorAll(".and");
+const arrows  = document.querySelectorAll(".arrow");
 
 const bpmInput = document.getElementById("bpm");
-const bpmVal = document.getElementById("bpmVal");
+const bpmVal   = document.getElementById("bpmVal");
 
 bpmInput.oninput = () => bpmVal.textContent = bpmInput.value;
 
-function click(freq, vol) {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.frequency.value = freq;
-  g.gain.value = vol;
-  o.connect(g);
-  g.connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime + 0.05);
-}
-
-function guitar() {
-  click(180, 0.15);
-}
-
-function tick() {
+function clearVisuals() {
   numbers.forEach(n => n.classList.remove("active"));
   ands.forEach(a => a.classList.remove("active"));
   arrows.forEach(a => a.classList.remove("active"));
+}
 
-  const beat = Math.floor(step / 2);
+function tick() {
+  clearVisuals();
+
+  const pulse = Math.floor(step / 2);
   const isAnd = step % 2 === 1;
 
   if (!isAnd) {
-    numbers[beat].classList.add("active");
-    if (pulseOn) click(beat === 0 ? 1000 : 700, beat === 0 ? 0.4 : 0.25);
+    numbers[pulse].classList.add("active");
+    playDown();
   } else {
-    ands[beat].classList.add("active");
+    ands[pulse].classList.add("active");
+    playUp();
   }
 
   arrows[step].classList.add("active");
-  guitar();
 
   step = (step + 1) % 8;
 }
@@ -238,6 +258,13 @@ document.getElementById("play").onclick = () => {
   if (playing) return;
   playing = true;
   step = 0;
+
+  // Esto es CLAVE para móviles (habilita audio)
+  downSound.play().then(() => {
+    downSound.pause();
+    downSound.currentTime = 0;
+  });
+
   const interval = (60 / bpmInput.value) * 1000 / 2;
   tick();
   timer = setInterval(tick, interval);
@@ -246,12 +273,9 @@ document.getElementById("play").onclick = () => {
 document.getElementById("stop").onclick = () => {
   playing = false;
   clearInterval(timer);
-};
-
-document.getElementById("togglePulse").onclick = (e) => {
-  pulseOn = !pulseOn;
-  e.target.textContent = pulseOn ? "Pulso ON" : "Pulso OFF";
+  clearVisuals();
 };
 </script>
+
 </body>
 </html>
