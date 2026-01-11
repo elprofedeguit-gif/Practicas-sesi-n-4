@@ -56,26 +56,18 @@ h1{
   margin-bottom:18px;
 }
 
-/* FILA DE TIEMPOS */
+/* TIEMPOS */
 .times{
   display:flex;
   gap:28px;
   font-size:36px;
 }
 
-.times span{
-  color:var(--gris);
-}
+.times span{ color:var(--gris); }
+.times .num.active{ color:var(--naranja); }
+.times .and.active{ color:#ccc; }
 
-.times .num.active{
-  color:var(--naranja);
-}
-
-.times .and.active{
-  color:#ccc;
-}
-
-/* FILA DE FLECHAS */
+/* FLECHAS */
 .arrows{
   display:flex;
   gap:28px;
@@ -83,17 +75,9 @@ h1{
   margin-top:14px;
 }
 
-.arrow{
-  color:#444;
-}
-
-.arrow.down.active{
-  color:var(--verde);
-}
-
-.arrow.up.active{
-  color:var(--violeta);
-}
+.arrow{ color:#444; }
+.arrow.down.active{ color:var(--verde); }
+.arrow.up.active{ color:var(--violeta); }
 
 /* CONTROLES */
 .controls{
@@ -125,9 +109,7 @@ button:active{
   text-align:center;
 }
 
-input[type=range]{
-  width:260px;
-}
+input[type=range]{ width:260px; }
 
 .note{
   margin-top:24px;
@@ -155,28 +137,18 @@ input[type=range]{
 
 <div class="exercise-title">Rasgueo base – Corcheas</div>
 
-<!-- TIEMPOS -->
 <div class="times">
-  <span class="num">1</span>
-  <span class="and">y</span>
-  <span class="num">2</span>
-  <span class="and">y</span>
-  <span class="num">3</span>
-  <span class="and">y</span>
-  <span class="num">4</span>
-  <span class="and">y</span>
+  <span class="num">1</span><span class="and">y</span>
+  <span class="num">2</span><span class="and">y</span>
+  <span class="num">3</span><span class="and">y</span>
+  <span class="num">4</span><span class="and">y</span>
 </div>
 
-<!-- FLECHAS -->
 <div class="arrows">
-  <span class="arrow down">↓</span>
-  <span class="arrow up">↑</span>
-  <span class="arrow down">↓</span>
-  <span class="arrow up">↑</span>
-  <span class="arrow down">↓</span>
-  <span class="arrow up">↑</span>
-  <span class="arrow down">↓</span>
-  <span class="arrow up">↑</span>
+  <span class="arrow down">↓</span><span class="arrow up">↑</span>
+  <span class="arrow down">↓</span><span class="arrow up">↑</span>
+  <span class="arrow down">↓</span><span class="arrow up">↑</span>
+  <span class="arrow down">↓</span><span class="arrow up">↑</span>
 </div>
 
 <div class="controls">
@@ -190,13 +162,28 @@ input[type=range]{
 </div>
 
 <div class="note">
-  Los sonidos que escuchás no corresponden a ningún acorde.<br>
-  Son cuerdas tocadas al aire y se usan solo como referencia rítmica.
+  Los sonidos no corresponden a acordes.<br>
+  Son cuerdas al aire usadas solo como referencia rítmica.
 </div>
 
 </div>
 
 <script>
+/* =======================
+   WEB AUDIO SETUP
+======================= */
+let audioCtx;
+let downBuffer, upBuffer;
+
+async function loadSample(url){
+  const res = await fetch(url);
+  const array = await res.arrayBuffer();
+  return await audioCtx.decodeAudioData(array);
+}
+
+/* =======================
+   UI + TIMING
+======================= */
 let step = 0;
 let timer = null;
 let playing = false;
@@ -210,51 +197,56 @@ const bpmVal = document.getElementById("bpmVal");
 
 bpmInput.oninput = () => bpmVal.textContent = bpmInput.value;
 
-/* AUDIO REAL */
-const downSound = new Audio("down.wav");
-const upSound   = new Audio("up.wav");
-
-downSound.volume = 0.85;
-upSound.volume   = 0.6;
-
-function play(sound){
-  if (!sound.paused && bpmInput.value >= 60) {
-    sound.currentTime = 0;
-  }
-  sound.play();
-}
-
 function clearVisuals(){
   nums.forEach(n=>n.classList.remove("active"));
   ands.forEach(a=>a.classList.remove("active"));
   arrows.forEach(a=>a.classList.remove("active"));
 }
 
+function playBuffer(buffer, gainValue){
+  const src = audioCtx.createBufferSource();
+  const gain = audioCtx.createGain();
+
+  src.buffer = buffer;
+  gain.gain.value = gainValue;
+
+  src.connect(gain).connect(audioCtx.destination);
+  src.start();
+}
+
 function tick(){
   clearVisuals();
 
   const pulse = Math.floor(step/2);
-  const isAnd = step%2===1;
+  const isAnd = step % 2 === 1;
 
   if(!isAnd){
     nums[pulse].classList.add("active");
     arrows[step].classList.add("active");
-    play(downSound);
+    playBuffer(downBuffer, 0.9);
   }else{
     ands[pulse].classList.add("active");
     arrows[step].classList.add("active");
-    play(upSound);
+    playBuffer(upBuffer, 0.65);
   }
 
-  step = (step+1)%8;
+  step = (step + 1) % 8;
 }
 
-document.getElementById("play").onclick = ()=>{
+document.getElementById("play").onclick = async ()=>{
   if(playing) return;
+
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    downBuffer = await loadSample("down.wav");
+    upBuffer   = await loadSample("up.wav");
+  }
+
   playing = true;
   step = 0;
-  tick(); // arranca en 1 fuerte
-  const interval = (60000/bpmInput.value)/2;
+  tick();
+
+  const interval = (60000 / bpmInput.value) / 2;
   timer = setInterval(tick, interval);
 };
 
