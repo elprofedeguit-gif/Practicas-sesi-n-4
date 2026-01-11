@@ -1,144 +1,145 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sesión 4 – Rasgueo en corcheas</title>
 
 <style>
-:root {
-  --bg: #141414;
-  --green: #00c853;
-  --orange: #ff9800;
-  --gray: #777;
+:root{
+  --bg:#141414;
+  --verde:#00c853;
+  --violeta:#b388ff;
+  --naranja:#ff9800;
+  --gris:#777;
 }
 
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: #fff;
-  font-family: Arial, sans-serif;
+body{
+  margin:0;
+  background:var(--bg);
+  color:#fff;
+  font-family:Arial,sans-serif;
 }
 
-.page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
 
-header {
-  text-align: center;
-  margin-top: 24px;
+header{
+  text-align:center;
+  margin-top:24px;
 }
 
-header img {
-  width: 160px;
-  max-width: 70%;
-  margin-bottom: 12px;
+header img{
+  width:160px;
+  max-width:70%;
+  margin-bottom:12px;
 }
 
-h1 {
-  color: #00e676;
-  margin: 0;
-  font-size: 26px;
+h1{
+  margin:0;
+  color:#00e676;
+  font-size:26px;
 }
 
-.subtitle {
-  font-style: italic;
-  font-size: 16px;
-  color: #b388ff;
-  margin-bottom: 24px;
+.subtitle{
+  font-style:italic;
+  color:var(--violeta);
+  margin-bottom:28px;
 }
 
-.exercise-title {
-  margin-top: 16px;
-  font-size: 22px;
+.exercise-title{
+  font-size:22px;
+  margin-bottom:18px;
 }
 
-/* ===== GRID DE PULSOS ===== */
-
-.grid {
-  display: flex;
-  gap: 40px;
-  margin-top: 30px;
+/* --- FILA DE TIEMPOS --- */
+.times{
+  display:flex;
+  gap:28px;
+  font-size:36px;
 }
 
-.column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.times span{
+  color:var(--gris);
 }
 
-.number {
-  font-size: 42px;
-  margin-bottom: 4px;
+.times .num.active{
+  color:var(--naranja);
 }
 
-.number.active {
-  color: var(--orange);
+.times .and.active{
+  color:#ccc;
 }
 
-.and {
-  font-size: 20px;
-  color: var(--gray);
-  margin-bottom: 14px;
+/* --- FILA DE FLECHAS --- */
+.arrows{
+  display:flex;
+  gap:28px;
+  font-size:42px;
+  margin-top:14px;
 }
 
-.and.active {
-  color: #ccc;
+.arrow{
+  color:#444;
 }
 
-.arrow {
-  font-size: 38px;
-  color: #555;
-  margin: 6px 0;
+.arrow.down.active{
+  color:var(--verde);
 }
 
-.arrow.active {
-  color: var(--green);
+.arrow.up.active{
+  color:var(--violeta);
 }
 
-/* ===== CONTROLES ===== */
-
-.controls {
-  margin-top: 30px;
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  justify-content: center;
+/* --- CONTROLES --- */
+.controls{
+  margin-top:28px;
+  display:flex;
+  gap:16px;
 }
 
-button {
-  background: #000;
-  color: #fff;
-  border: 2px solid var(--green);
-  padding: 12px 26px;
-  font-size: 16px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform 0.1s ease;
+button{
+  background:#00c853;
+  color:#000;
+  border:none;
+  padding:16px 42px;
+  font-size:18px;
+  font-weight:600;
+  border-radius:14px;
+  cursor:pointer;
+  box-shadow:0 4px 0 #009624;
+  transition:transform 0.08s ease, box-shadow 0.08s ease;
 }
 
-button:active {
-  transform: scale(0.95);
+button:active{
+  transform:translateY(3px);
+  box-shadow:0 1px 0 #009624;
 }
 
-.bpm {
-  margin-top: 20px;
-  text-align: center;
+.bpm{
+  margin-top:18px;
+  text-align:center;
 }
 
-input[type="range"] {
-  width: 260px;
+input[type=range]{
+  width:260px;
 }
 
-@media (max-width: 600px) {
-  .number { font-size: 32px; }
-  .arrow { font-size: 30px; }
-  .grid { gap: 24px; }
+.note{
+  margin-top:24px;
+  font-size:14px;
+  color:#aaa;
+  max-width:520px;
+  text-align:center;
+}
+
+@media(max-width:600px){
+  .times{font-size:28px;gap:18px;}
+  .arrows{font-size:34px;gap:18px;}
 }
 </style>
 </head>
@@ -147,42 +148,35 @@ input[type="range"] {
 <div class="page">
 
 <header>
-  <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png" alt="Logo">
+  <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png">
   <h1>Prácticas guiadas – Sesión 4</h1>
   <div class="subtitle">El motor ya está en marcha</div>
 </header>
 
 <div class="exercise-title">Rasgueo base – Corcheas</div>
 
-<!-- GRID -->
-<div class="grid">
-  <div class="column">
-    <div class="number">1</div>
-    <div class="and">&</div>
-    <div class="arrow">↓</div>
-    <div class="arrow">↑</div>
-  </div>
+<!-- TIEMPOS -->
+<div class="times" id="times">
+  <span class="num">1</span>
+  <span class="and">y</span>
+  <span class="num">2</span>
+  <span class="and">y</span>
+  <span class="num">3</span>
+  <span class="and">y</span>
+  <span class="num">4</span>
+  <span class="and">y</span>
+</div>
 
-  <div class="column">
-    <div class="number">2</div>
-    <div class="and">&</div>
-    <div class="arrow">↓</div>
-    <div class="arrow">↑</div>
-  </div>
-
-  <div class="column">
-    <div class="number">3</div>
-    <div class="and">&</div>
-    <div class="arrow">↓</div>
-    <div class="arrow">↑</div>
-  </div>
-
-  <div class="column">
-    <div class="number">4</div>
-    <div class="and">&</div>
-    <div class="arrow">↓</div>
-    <div class="arrow">↑</div>
-  </div>
+<!-- FLECHAS -->
+<div class="arrows" id="arrows">
+  <span class="arrow down">↓</span>
+  <span class="arrow up">↑</span>
+  <span class="arrow down">↓</span>
+  <span class="arrow up">↑</span>
+  <span class="arrow down">↓</span>
+  <span class="arrow up">↑</span>
+  <span class="arrow down">↓</span>
+  <span class="arrow up">↑</span>
 </div>
 
 <div class="controls">
@@ -191,86 +185,79 @@ input[type="range"] {
 </div>
 
 <div class="bpm">
-  <div>BPM: <span id="bpmVal">40</span></div>
+  BPM: <span id="bpmVal">40</span><br>
   <input type="range" min="30" max="70" value="40" id="bpm">
+</div>
+
+<div class="note">
+  Los sonidos que escuchás no corresponden a ningún acorde.<br>
+  Son cuerdas tocadas al aire y se usan solo como referencia rítmica.
 </div>
 
 </div>
 
 <script>
-let audioReady = false;
-let timer;
 let step = 0;
+let timer = null;
 let playing = false;
 
-/* ===== TUS RASGUEOS ===== */
-const downSound = new Audio("down.wav");
-const upSound   = new Audio("up.wav");
-
-downSound.volume = 0.9; // ↓ más acento
-upSound.volume   = 0.65; // ↑ más suave
-
-function playDown() {
-  downSound.currentTime = 0;
-  downSound.play();
-}
-
-function playUp() {
-  upSound.currentTime = 0;
-  upSound.play();
-}
-
-const numbers = document.querySelectorAll(".number");
-const ands    = document.querySelectorAll(".and");
-const arrows  = document.querySelectorAll(".arrow");
+const nums = document.querySelectorAll(".num");
+const ands = document.querySelectorAll(".and");
+const arrows = document.querySelectorAll(".arrow");
 
 const bpmInput = document.getElementById("bpm");
-const bpmVal   = document.getElementById("bpmVal");
+const bpmVal = document.getElementById("bpmVal");
 
 bpmInput.oninput = () => bpmVal.textContent = bpmInput.value;
 
-function clearVisuals() {
-  numbers.forEach(n => n.classList.remove("active"));
-  ands.forEach(a => a.classList.remove("active"));
-  arrows.forEach(a => a.classList.remove("active"));
+/* --- AUDIO REAL --- */
+const downSound = new Audio("down.wav");
+const upSound   = new Audio("up.wav");
+
+downSound.volume = 0.9;
+upSound.volume   = 0.65;
+
+function play(sound){
+  sound.currentTime = 0;
+  sound.play();
+  setTimeout(()=>sound.pause(), 140); // fade-out simple anti-clipping
 }
 
-function tick() {
+function clearVisuals(){
+  nums.forEach(n=>n.classList.remove("active"));
+  ands.forEach(a=>a.classList.remove("active"));
+  arrows.forEach(a=>a.classList.remove("active"));
+}
+
+function tick(){
   clearVisuals();
 
-  const pulse = Math.floor(step / 2);
-  const isAnd = step % 2 === 1;
+  const pulse = Math.floor(step/2);
+  const isAnd = step%2===1;
 
-  if (!isAnd) {
-    numbers[pulse].classList.add("active");
-    playDown();
-  } else {
+  if(!isAnd){
+    nums[pulse].classList.add("active");
+    arrows[step].classList.add("active");
+    play(downSound);
+  }else{
     ands[pulse].classList.add("active");
-    playUp();
+    arrows[step].classList.add("active");
+    play(upSound);
   }
 
-  arrows[step].classList.add("active");
-
-  step = (step + 1) % 8;
+  step = (step+1)%8;
 }
 
-document.getElementById("play").onclick = () => {
-  if (playing) return;
+document.getElementById("play").onclick = ()=>{
+  if(playing) return;
   playing = true;
   step = 0;
-
-  // Esto es CLAVE para móviles (habilita audio)
-  downSound.play().then(() => {
-    downSound.pause();
-    downSound.currentTime = 0;
-  });
-
-  const interval = (60 / bpmInput.value) * 1000 / 2;
-  tick();
+  tick(); // arranca SIEMPRE en 1 fuerte
+  const interval = (60000/bpmInput.value)/2;
   timer = setInterval(tick, interval);
 };
 
-document.getElementById("stop").onclick = () => {
+document.getElementById("stop").onclick = ()=>{
   playing = false;
   clearInterval(timer);
   clearVisuals();
