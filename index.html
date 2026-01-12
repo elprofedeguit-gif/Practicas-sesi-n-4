@@ -18,23 +18,33 @@ body{
 }
 
 .logo{
-  margin-top:25px;
+  margin-top:20px;
+}
+.logo img{
+  width:120px;
+  opacity:.9;
 }
 
 h1{
-  margin:20px 0 5px;
+  margin:20px 0 4px;
   color:#4ade80;
 }
 
 h2{
-  margin:0 0 40px;
+  margin:0;
   font-style:italic;
   font-weight:normal;
+  font-size:16px;
   color:#a855f7;
 }
 
+.exercise{
+  margin-top:25px;
+  font-size:20px;
+}
+
 .rows{
-  margin-bottom:30px;
+  margin:30px 0;
 }
 
 .row{
@@ -87,9 +97,7 @@ button{
   cursor:pointer;
 }
 
-button:active{
-  transform:scale(.96);
-}
+button:active{transform:scale(.96);}
 
 input[type=range]{
   width:300px;
@@ -108,11 +116,15 @@ input[type=range]{
 <body>
 
 <div class="logo">
-  <strong>EXEQUIEL BERNARD</strong>
+  <img src="logo.png" alt="Exequiel Bernard">
 </div>
 
 <h1>Prácticas guiadas – Sesión 4</h1>
 <h2>El motor ya está en marcha</h2>
+
+<div class="exercise">
+  <strong>Rasgueo Inicial (Básico)</strong>
+</div>
 
 <div class="rows">
   <div class="row" id="times"></div>
@@ -141,8 +153,12 @@ const pattern=[
  {l:"4",t:"down"},{l:"y",t:"up"}
 ];
 
-const G_DOWN=.75, G_UP=.48;
-const lookAhead=.1, visualOffset=-.012;
+const GAIN_STRONG = 0.85; // tiempo 1
+const GAIN_DOWN   = 0.65; // ↓ normal
+const GAIN_UP     = 0.45; // ↑
+
+const lookAhead=.1;
+const visualOffset=-.012;
 
 const times=document.getElementById("times");
 const arrows=document.getElementById("arrows");
@@ -193,10 +209,20 @@ function scheduler(){
 
   while(nextTime<audioCtx.currentTime+lookAhead){
     const p=pattern[step];
+
+    let gain;
+    if(step===0){
+      gain = GAIN_STRONG;
+    }else if(p.t==="down"){
+      gain = GAIN_DOWN;
+    }else{
+      gain = GAIN_UP;
+    }
+
     playStrum(
       p.t==="down"?downBuffer:upBuffer,
       nextTime,
-      p.t==="down"?G_DOWN:G_UP
+      gain
     );
 
     const d=(nextTime-audioCtx.currentTime+visualOffset)*1000;
@@ -228,7 +254,6 @@ playBtn.onclick=async()=>{
   }else{
     playing=false;
     clearInterval(timer);
-    // NO se corta audio: solo se apagan visuales
     timeEls.forEach(e=>e.classList.remove("active"));
     arrowEls.forEach(e=>e.classList.remove("active"));
   }
