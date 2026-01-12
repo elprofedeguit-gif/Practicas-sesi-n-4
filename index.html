@@ -116,6 +116,7 @@ Son cuerdas al aire como referencia rítmica.
 let audioCtx, downBuffer, upBuffer;
 let playing=false, step=0, nextTime=0, timer;
 
+/* PATRÓN */
 const pattern=[
  {l:"1",t:"down",strong:true},
  {l:"y",t:"up",strong:false},
@@ -127,15 +128,23 @@ const pattern=[
  {l:"y",t:"up",strong:false}
 ];
 
-const GAIN_STRONG=.9, GAIN_DOWN=.6, GAIN_UP=.45;
-const lookAhead=.1, visualOffset=-.012;
+/* GANANCIAS */
+const GAIN_STRONG = 0.9;
+const GAIN_DOWN   = 0.6;
+const GAIN_UP     = 0.45;
 
+/* TIMING */
+const lookAhead = 0.1;
+const visualOffset = -0.012;
+
+/* VISUAL */
 const times=document.getElementById("times");
 const arrows=document.getElementById("arrows");
 
 pattern.forEach(p=>{
   const t=document.createElement("div");
-  t.className="time"; t.textContent=p.l;
+  t.className="time";
+  t.textContent=p.l;
   times.appendChild(t);
 
   const a=document.createElement("div");
@@ -154,6 +163,7 @@ function highlight(i){
   arrowEls[i].classList.add("active");
 }
 
+/* AUDIO */
 async function loadSample(u){
   const r=await fetch(u);
   return await audioCtx.decodeAudioData(await r.arrayBuffer());
@@ -163,20 +173,23 @@ function playStrum(buf,time,g){
   const s=audioCtx.createBufferSource();
   const gn=audioCtx.createGain();
   s.buffer=buf;
+
   gn.gain.setValueAtTime(0,time);
   gn.gain.linearRampToValueAtTime(g,time+.004);
   gn.gain.linearRampToValueAtTime(0,time+buf.duration);
+
   s.connect(gn).connect(audioCtx.destination);
   s.start(time);
 }
 
+/* SCHEDULER */
 function scheduler(){
   const bpm=+bpmSlider.value;
   const interval=60/bpm/2;
 
-  while(nextTime<audioCtx.currentTime+lookAhead){
+  while(nextTime < audioCtx.currentTime + lookAhead){
     const p=pattern[step];
-    const gain=p.strong?GAIN_STRONG:(p.t==="down"?GAIN_DOWN:GAIN_UP);
+    const gain = p.strong ? GAIN_STRONG : (p.t==="down" ? GAIN_DOWN : GAIN_UP);
 
     playStrum(
       p.t==="down"?downBuffer:upBuffer,
@@ -187,39 +200,35 @@ function scheduler(){
     const d=(nextTime-audioCtx.currentTime+visualOffset)*1000;
     setTimeout(()=>highlight(step),d);
 
-    nextTime+=interval;
-    step=(step+1)%pattern.length;
+    nextTime += interval;
+    step = (step + 1) % pattern.length;
   }
 }
 
+/* CONTROLES */
 const playBtn=document.getElementById("play");
 const bpmSlider=document.getElementById("bpm");
 const bpmVal=document.getElementById("bpmVal");
+
 bpmSlider.oninput=()=>bpmVal.textContent=bpmSlider.value;
 
-playBtn.onclick=async()=>{
+playBtn.onclick = async () => {
   if(!audioCtx){
-    audioCtx=new AudioContext();
-    downBuffer=await loadSample("down.wav");
-    upBuffer=await loadSample("up.wav");
+    audioCtx = new AudioContext();
+    downBuffer = await loadSample("down.wav");
+    upBuffer   = await loadSample("up.wav");
   }
 
   if(!playing){
-    playing=true;
+    playing = true;
 
-    const bpm=+bpmSlider.value;
-    const interval=60/bpm/2;
+    step = 0;                       // 👈 SIEMPRE ARRANCA EN "1"
+    nextTime = audioCtx.currentTime; // 👈 SIN OFFSET
 
-    // 🔥 DISPARO INICIAL CORRECTO
-    playStrum(downBuffer,audioCtx.currentTime,GAIN_STRONG);
-    highlight(0);
-
-    step=1;
-    nextTime=audioCtx.currentTime+interval;
-    timer=setInterval(scheduler,25);
+    timer = setInterval(scheduler,25);
 
   }else{
-    playing=false;
+    playing = false;
     clearInterval(timer);
     timeEls.forEach(e=>e.classList.remove("active"));
     arrowEls.forEach(e=>e.classList.remove("active"));
