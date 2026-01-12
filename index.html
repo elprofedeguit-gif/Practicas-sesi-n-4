@@ -114,7 +114,9 @@ Son cuerdas al aire como referencia rítmica.
 
 <script>
 let audioCtx, downBuffer, upBuffer;
-let playing=false, step=0, nextTime=0, timer;
+let playing=false;
+let step=0;
+let intervalId=null;
 
 const pattern=[
  {l:"1",t:"down",strong:true},
@@ -127,17 +129,17 @@ const pattern=[
  {l:"y",t:"up"}
 ];
 
-const GAIN_STRONG=0.9, GAIN_DOWN=0.6, GAIN_UP=0.45;
-const lookAhead=0.1;
-const visualOffset=-0.012;
-const START_DELAY=0.15; // 🔒 CLAVE
+const GAIN_STRONG=0.9;
+const GAIN_DOWN=0.6;
+const GAIN_UP=0.45;
 
 const times=document.getElementById("times");
 const arrows=document.getElementById("arrows");
 
 pattern.forEach(p=>{
   const t=document.createElement("div");
-  t.className="time"; t.textContent=p.l;
+  t.className="time";
+  t.textContent=p.l;
   times.appendChild(t);
 
   const a=document.createElement("div");
@@ -161,37 +163,35 @@ async function loadSample(u){
   return await audioCtx.decodeAudioData(await r.arrayBuffer());
 }
 
-function playStrum(buf,time,g){
-  const s=audioCtx.createBufferSource();
-  const gn=audioCtx.createGain();
-  s.buffer=buf;
-  gn.gain.setValueAtTime(0,time);
-  gn.gain.linearRampToValueAtTime(g,time+.004);
-  gn.gain.linearRampToValueAtTime(0,time+buf.duration);
-  s.connect(gn).connect(audioCtx.destination);
-  s.start(time);
+function playStrum(buffer,gainValue){
+  const src=audioCtx.createBufferSource();
+  const g=audioCtx.createGain();
+  src.buffer=buffer;
+
+  const now=audioCtx.currentTime;
+  g.gain.setValueAtTime(0,now);
+  g.gain.linearRampToValueAtTime(gainValue,now+0.004);
+  g.gain.linearRampToValueAtTime(0,now+buffer.duration);
+
+  src.connect(g).connect(audioCtx.destination);
+  src.start(now);
 }
 
-function scheduler(){
-  const bpm=+bpmSlider.value;
-  const interval=60/bpm/2;
+function tick(){
+  const p=pattern[step];
 
-  while(nextTime<audioCtx.currentTime+lookAhead){
-    const p=pattern[step];
-    const gain = p.strong ? GAIN_STRONG : (p.t==="down"?GAIN_DOWN:GAIN_UP);
+  const gain =
+    p.strong ? GAIN_STRONG :
+    p.t==="down" ? GAIN_DOWN : GAIN_UP;
 
-    playStrum(
-      p.t==="down"?downBuffer:upBuffer,
-      nextTime,
-      gain
-    );
+  playStrum(
+    p.t==="down" ? downBuffer : upBuffer,
+    gain
+  );
 
-    const d=(nextTime-audioCtx.currentTime+visualOffset)*1000;
-    setTimeout(()=>highlight(step),d);
+  highlight(step);
 
-    nextTime+=interval;
-    step=(step+1)%pattern.length;
-  }
+  step = (step + 1) % pattern.length;
 }
 
 const playBtn=document.getElementById("play");
@@ -209,11 +209,16 @@ playBtn.onclick=async()=>{
   if(!playing){
     playing=true;
     step=0;
-    nextTime=audioCtx.currentTime + START_DELAY;
-    timer=setInterval(scheduler,25);
+
+    const bpm=+bpmSlider.value;
+    const interval=60000/(bpm*2);
+
+    tick(); // 🔥 PRIMER GOLPE SIEMPRE ↓ FUERTE
+    intervalId=setInterval(tick,interval);
+
   }else{
     playing=false;
-    clearInterval(timer);
+    clearInterval(intervalId);
     timeEls.forEach(e=>e.classList.remove("active"));
     arrowEls.forEach(e=>e.classList.remove("active"));
   }
