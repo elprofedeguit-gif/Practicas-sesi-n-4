@@ -1,276 +1,210 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Prácticas guiadas – Sesión 4</title>
+<meta charset="UTF-8">
+<title>Prácticas guiadas – Sesión 4</title>
 
-  <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      text-align: center;
-    }
+<style>
+body {
+  background:#111;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  text-align:center;
+  padding:20px;
+}
 
-    h1 {
-      margin-bottom: 4px;
-    }
+h1 { margin-bottom:5px; }
+h2 {
+  margin-top:0;
+  font-style:italic;
+  font-weight:normal;
+  color:#a855f7;
+}
 
-    h2 {
-      margin-top: 0;
-      font-style: italic;
-      font-weight: normal;
-      color: #a855f7;
-    }
+.row {
+  display:flex;
+  justify-content:space-between;
+  max-width:600px;
+  margin:30px auto 0;
+}
 
-    .timeline, .arrows {
-      display: flex;
-      justify-content: space-between;
-      max-width: 640px;
-      margin: 30px auto 0;
-    }
+.time {
+  width:40px;
+  font-size:22px;
+  opacity:.35;
+  transition:.1s;
+}
 
-    .time {
-      width: 40px;
-      font-size: 22px;
-      opacity: 0.35;
-      transition: all 0.1s ease;
-    }
+.time.active {
+  opacity:1;
+  transform:scale(1.15);
+}
 
-    .time.active {
-      opacity: 1;
-      transform: scale(1.15);
-    }
+.arrow {
+  width:40px;
+  font-size:32px;
+  opacity:.35;
+  transition:.1s;
+}
 
-    .arrows {
-      margin-top: 10px;
-      font-size: 32px;
-    }
+.arrow.down { color:#22c55e; }
+.arrow.up { color:#a855f7; }
 
-    .arrow {
-      width: 40px;
-      opacity: 0.35;
-      transition: all 0.1s ease;
-    }
+.arrow.active {
+  opacity:1;
+  transform:scale(1.2);
+  text-shadow:0 0 10px currentColor;
+}
 
-    .arrow.down {
-      color: #22c55e;
-    }
+.controls {
+  margin-top:40px;
+}
 
-    .arrow.up {
-      color: #a855f7;
-    }
+button {
+  background:#000;
+  color:#fff;
+  border:none;
+  padding:14px 26px;
+  font-size:18px;
+  border-radius:8px;
+  margin:0 10px;
+  cursor:pointer;
+}
 
-    .arrow.active {
-      opacity: 1;
-      transform: scale(1.2);
-      text-shadow: 0 0 10px currentColor;
-    }
+button:active { transform:scale(.95); }
 
-    .controls {
-      margin-top: 40px;
-    }
+input[type=range] {
+  width:280px;
+  margin-top:20px;
+}
 
-    button {
-      background: #000;
-      color: #fff;
-      border: none;
-      padding: 14px 26px;
-      font-size: 18px;
-      border-radius: 8px;
-      margin: 0 10px;
-      cursor: pointer;
-    }
-
-    button:active {
-      transform: scale(0.95);
-    }
-
-    input[type="range"] {
-      width: 300px;
-      margin-top: 20px;
-    }
-
-    .info {
-      max-width: 640px;
-      margin: 30px auto 0;
-      font-size: 14px;
-      opacity: 0.7;
-      line-height: 1.4;
-    }
-  </style>
+.info {
+  margin-top:30px;
+  font-size:14px;
+  opacity:.7;
+}
+</style>
 </head>
 
 <body>
 
-  <h1>Prácticas guiadas – Sesión 4</h1>
-  <h2>El motor ya está en marcha</h2>
+<h1>Prácticas guiadas – Sesión 4</h1>
+<h2>El motor ya está en marcha</h2>
 
-  <div class="timeline" id="times"></div>
-  <div class="arrows" id="arrows"></div>
+<div class="row" id="times"></div>
+<div class="row" id="arrows"></div>
 
-  <div class="controls">
-    <button id="play">Play</button>
-    <button id="stop">Stop</button><br><br>
+<div class="controls">
+  <button id="play">Play</button>
+  <button id="stop">Stop</button><br><br>
+  <input type="range" id="bpm" min="30" max="70" value="40">
+  <div>BPM: <span id="bpmVal">40</span></div>
+</div>
 
-    <input type="range" id="bpm" min="30" max="70" value="40">
-    <div>BPM: <span id="bpmValue">40</span></div>
-  </div>
-
-  <div class="info">
-    Los sonidos no corresponden a ningún acorde.<br>
-    Son cuerdas tocadas al aire y se usan solo como referencia rítmica.
-  </div>
+<div class="info">
+Los sonidos no corresponden a ningún acorde.<br>
+Son cuerdas al aire como referencia rítmica.
+</div>
 
 <script>
-/* =========================
-   AUDIO CONTEXT
-========================= */
-let audioCtx;
-let downBuffer, upBuffer;
+let audioCtx, downBuffer, upBuffer;
+let isPlaying=false, step=0, nextTime=0, timer;
 
-/* =========================
-   CONFIGURACIÓN
-========================= */
-const pattern = [
-  { label: "1", type: "down" },
-  { label: "y", type: "up" },
-  { label: "2", type: "down" },
-  { label: "y", type: "up" },
-  { label: "3", type: "down" },
-  { label: "y", type: "up" },
-  { label: "4", type: "down" },
-  { label: "y", type: "up" }
+const pattern=[
+ {l:"1",t:"down"},{l:"y",t:"up"},
+ {l:"2",t:"down"},{l:"y",t:"up"},
+ {l:"3",t:"down"},{l:"y",t:"up"},
+ {l:"4",t:"down"},{l:"y",t:"up"}
 ];
 
-const GAIN_DOWN = 0.75;
-const GAIN_UP   = 0.48;
+const G_DOWN=.75, G_UP=.48;
+const lookAhead=.1, visualOffset=-.012;
 
-const lookAhead = 0.1;        // 100 ms
-const visualOffset = -0.012;  // -12 ms
+const times=document.getElementById("times");
+const arrows=document.getElementById("arrows");
 
-let isPlaying = false;
-let currentStep = 0;
-let nextEventTime = 0;
-let schedulerId;
+pattern.forEach(p=>{
+  const t=document.createElement("div");
+  t.className="time"; t.textContent=p.l;
+  times.appendChild(t);
 
-/* =========================
-   CARGA DE AUDIOS
-========================= */
-async function loadSample(url) {
-  const res = await fetch(url);
-  const arrayBuffer = await res.arrayBuffer();
-  return await audioCtx.decodeAudioData(arrayBuffer);
-}
-
-async function loadSamples() {
-  downBuffer = await loadSample("down.wav");
-  upBuffer   = await loadSample("up.wav");
-}
-
-/* =========================
-   VISUAL
-========================= */
-const timesDiv = document.getElementById("times");
-const arrowsDiv = document.getElementById("arrows");
-
-pattern.forEach(p => {
-  const t = document.createElement("div");
-  t.className = "time";
-  t.textContent = p.label;
-  timesDiv.appendChild(t);
-
-  const a = document.createElement("div");
-  a.className = "arrow " + p.type;
-  a.textContent = p.type === "down" ? "↓" : "↑";
-  arrowsDiv.appendChild(a);
+  const a=document.createElement("div");
+  a.className="arrow "+p.t;
+  a.textContent=p.t==="down"?"↓":"↑";
+  arrows.appendChild(a);
 });
 
-const timeEls = document.querySelectorAll(".time");
-const arrowEls = document.querySelectorAll(".arrow");
+const timeEls=document.querySelectorAll(".time");
+const arrowEls=document.querySelectorAll(".arrow");
 
-function highlight(step) {
-  timeEls.forEach(el => el.classList.remove("active"));
-  arrowEls.forEach(el => el.classList.remove("active"));
-
-  timeEls[step].classList.add("active");
-  arrowEls[step].classList.add("active");
+function highlight(i){
+  timeEls.forEach(e=>e.classList.remove("active"));
+  arrowEls.forEach(e=>e.classList.remove("active"));
+  timeEls[i].classList.add("active");
+  arrowEls[i].classList.add("active");
 }
 
-/* =========================
-   AUDIO
-========================= */
-function playStrum(buffer, time, gainValue) {
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-
-  const gain = audioCtx.createGain();
-  gain.gain.value = gainValue;
-
-  source.connect(gain).connect(audioCtx.destination);
-  source.start(time);
+async function loadSample(u){
+  const r=await fetch(u);
+  return await audioCtx.decodeAudioData(await r.arrayBuffer());
 }
 
-/* =========================
-   SCHEDULER
-========================= */
-function scheduler() {
-  const bpm = +bpmSlider.value;
-  const interval = 60 / bpm / 2; // corcheas
+function playStrum(buf,time,g){
+  const s=audioCtx.createBufferSource();
+  const gn=audioCtx.createGain();
+  s.buffer=buf;
 
-  while (nextEventTime < audioCtx.currentTime + lookAhead) {
-    const step = currentStep;
-    const isDown = pattern[step].type === "down";
+  gn.gain.setValueAtTime(0,time);
+  gn.gain.linearRampToValueAtTime(g,time+.005);
+  gn.gain.linearRampToValueAtTime(0,time+buf.duration);
 
-    playStrum(
-      isDown ? downBuffer : upBuffer,
-      nextEventTime,
-      isDown ? GAIN_DOWN : GAIN_UP
-    );
+  s.connect(gn).connect(audioCtx.destination);
+  s.start(time);
+}
 
-    const now = audioCtx.currentTime;
-    const delay = (nextEventTime - now + visualOffset) * 1000;
+function scheduler(){
+  const bpm=+bpmSlider.value;
+  const intv=60/bpm/2;
 
-    setTimeout(() => highlight(step), delay);
+  while(nextTime<audioCtx.currentTime+lookAhead){
+    const p=pattern[step];
+    playStrum(p.t==="down"?downBuffer:upBuffer,
+              nextTime,
+              p.t==="down"?G_DOWN:G_UP);
 
-    nextEventTime += interval;
-    currentStep = (currentStep + 1) % pattern.length;
+    const d=(nextTime-audioCtx.currentTime+visualOffset)*1000;
+    setTimeout(()=>highlight(step),d);
+
+    nextTime+=intv;
+    step=(step+1)%pattern.length;
   }
 }
 
-/* =========================
-   CONTROLES
-========================= */
-const playBtn = document.getElementById("play");
-const stopBtn = document.getElementById("stop");
-const bpmSlider = document.getElementById("bpm");
-const bpmValue = document.getElementById("bpmValue");
+const playBtn=document.getElementById("play");
+const stopBtn=document.getElementById("stop");
+const bpmSlider=document.getElementById("bpm");
+const bpmVal=document.getElementById("bpmVal");
 
-bpmSlider.oninput = () => bpmValue.textContent = bpmSlider.value;
+bpmSlider.oninput=()=>bpmVal.textContent=bpmSlider.value;
 
-playBtn.onclick = async () => {
-  if (isPlaying) return;
-
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
-    await loadSamples();
+playBtn.onclick=async()=>{
+  if(isPlaying) return;
+  if(!audioCtx){
+    audioCtx=new AudioContext();
+    downBuffer=await loadSample("down.wav");
+    upBuffer=await loadSample("up.wav");
   }
-
-  isPlaying = true;
-  currentStep = 0;
-  nextEventTime = audioCtx.currentTime + 0.05;
-
-  schedulerId = setInterval(scheduler, 25);
+  isPlaying=true;
+  step=0;
+  nextTime=audioCtx.currentTime+.05;
+  timer=setInterval(scheduler,25);
 };
 
-stopBtn.onclick = () => {
-  isPlaying = false;
-  clearInterval(schedulerId);
-
-  timeEls.forEach(el => el.classList.remove("active"));
-  arrowEls.forEach(el => el.classList.remove("active"));
+stopBtn.onclick=()=>{
+  isPlaying=false;
+  clearInterval(timer);
+  timeEls.forEach(e=>e.classList.remove("active"));
+  arrowEls.forEach(e=>e.classList.remove("active"));
 };
 </script>
 
