@@ -21,12 +21,12 @@ body{
   margin-top:20px;
 }
 .logo img{
-  width:120px;
-  opacity:.9;
+  width:140px;
+  opacity:.95;
 }
 
 h1{
-  margin:20px 0 4px;
+  margin:18px 0 4px;
   color:#4ade80;
 }
 
@@ -39,12 +39,12 @@ h2{
 }
 
 .exercise{
-  margin-top:25px;
+  margin-top:22px;
   font-size:20px;
 }
 
 .rows{
-  margin:30px 0;
+  margin:28px 0;
 }
 
 .row{
@@ -116,7 +116,8 @@ input[type=range]{
 <body>
 
 <div class="logo">
-  <img src="logo.png" alt="Exequiel Bernard">
+  <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png"
+       alt="Exequiel Bernard">
 </div>
 
 <h1>Prácticas guiadas – Sesión 4</h1>
@@ -146,16 +147,21 @@ Son cuerdas al aire como referencia rítmica.
 let audioCtx, downBuffer, upBuffer;
 let playing=false, step=0, nextTime=0, timer;
 
+// PATRÓN CON ACENTO EXPLÍCITO
 const pattern=[
- {l:"1",t:"down"},{l:"y",t:"up"},
- {l:"2",t:"down"},{l:"y",t:"up"},
- {l:"3",t:"down"},{l:"y",t:"up"},
- {l:"4",t:"down"},{l:"y",t:"up"}
+ {l:"1",t:"down",strong:true},
+ {l:"y",t:"up",  strong:false},
+ {l:"2",t:"down",strong:false},
+ {l:"y",t:"up",  strong:false},
+ {l:"3",t:"down",strong:false},
+ {l:"y",t:"up",  strong:false},
+ {l:"4",t:"down",strong:false},
+ {l:"y",t:"up",  strong:false}
 ];
 
-const GAIN_STRONG = 0.85; // tiempo 1
-const GAIN_DOWN   = 0.65; // ↓ normal
-const GAIN_UP     = 0.45; // ↑
+const GAIN_STRONG = 0.9;
+const GAIN_DOWN   = 0.6;
+const GAIN_UP     = 0.45;
 
 const lookAhead=.1;
 const visualOffset=-.012;
@@ -211,7 +217,7 @@ function scheduler(){
     const p=pattern[step];
 
     let gain;
-    if(step===0){
+    if(p.strong){
       gain = GAIN_STRONG;
     }else if(p.t==="down"){
       gain = GAIN_DOWN;
