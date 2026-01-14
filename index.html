@@ -2,10 +2,17 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Prácticas guiadas – Sesión 4</title>
+<title>Zona de Práctica – Sesión 4 ⭐</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+:root{
+  --bg:#0f0f0f;
+  --green:#22C55E;
+  --violet:#A855F7;
+  --gray:#9ca3af;
+}
+
 body{
   margin:0;
   min-height:100vh;
@@ -18,47 +25,36 @@ body{
   text-align:center;
 }
 
-.logo{margin-top:24px;}
-.logo img{width:150px;opacity:.95;}
+.logo{ margin-top:20px; }
+.logo img{ width:140px; }
 
-h1{margin:18px 0 4px;color:#22C55E;}
-h2{
-  margin:0;
+h1{
+  margin:18px 0 4px;
+  color:var(--green);
+  font-weight:600;
+}
+
+.subtitle{
+  color:var(--violet);
   font-style:italic;
-  font-weight:normal;
   font-size:16px;
-  color:#a855f7;
+  margin-bottom:8px;
 }
 
-.menu{
-  margin-top:40px;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-}
-
-.menu-btn{
-  background:#111;
-  border:1.5px solid #22C55E;
-  border-radius:16px;
-  padding:18px 28px;
-  font-size:17px;
-  color:#fff;
-  cursor:pointer;
-  width:320px;
-}
-
-.exercise-title{
-  margin-top:24px;
+.exercise{
+  margin-top:16px;
   font-size:20px;
   font-weight:600;
 }
 
-.rows{margin:28px 0;}
+/* FILAS */
+.rows{ margin:28px 0; }
+
 .row{
   display:flex;
   justify-content:space-between;
   width:420px;
+  max-width:90vw;
   margin:8px auto;
 }
 
@@ -66,50 +62,63 @@ h2{
   width:40px;
   font-size:22px;
   opacity:.35;
+  transition:.1s;
 }
-.time.active{opacity:1;transform:scale(1.2);}
+.time.active{
+  opacity:1;
+  transform:scale(1.2);
+}
 
 .arrow{
   width:40px;
   font-size:32px;
-  opacity:.25;
+  opacity:.35;
   transition:.1s;
 }
-.arrow.down{color:#22C55E;}
-.arrow.up{color:#a855f7;}
+.arrow.down{ color:var(--green); }
+.arrow.up{ color:var(--violet); }
+
 .arrow.active{
   opacity:1;
   transform:scale(1.25);
   text-shadow:0 0 12px currentColor;
 }
 
-.controls{margin-top:10px;}
+/* CONTROLES */
+.controls{ margin-top:10px; }
+
 button{
-  background:#22C55E;
+  background:var(--green);
   color:#000;
   border:none;
-  padding:14px 26px;
-  font-size:16px;
+  padding:14px 30px;
+  font-size:18px;
   border-radius:14px;
-  margin:8px;
+  margin:10px;
   cursor:pointer;
 }
+button:active{ transform:scale(.96); }
 
-button.secondary{
-  background:#1a1a1a;
+button.metro{
+  background:#222;
   color:#fff;
-  border:1px solid #22C55E;
+  border:1px solid var(--green);
+}
+button.metro.active{
+  background:var(--green);
+  color:#000;
 }
 
-input[type=range]{width:300px;accent-color:#a855f7;}
-
-.section{display:none;}
-.section.active{display:block;}
+input[type=range]{
+  width:300px;
+  max-width:90vw;
+  accent-color:var(--violet);
+}
 
 .info{
   margin-top:26px;
   font-size:14px;
-  opacity:.75;
+  opacity:.7;
   max-width:420px;
 }
 </style>
@@ -121,161 +130,129 @@ input[type=range]{width:300px;accent-color:#a855f7;}
   <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png">
 </div>
 
-<h1>Prácticas guiadas – Sesión 4</h1>
-<h2>El motor ya está en marcha</h2>
+<h1>Zona de Práctica – Sesión 4 ⭐</h1>
+<div class="subtitle">El motor ya está en marcha</div>
 
-<!-- MENÚ -->
-<div class="section active" id="menu">
-  <div class="menu">
-    <button class="menu-btn" onclick="openExercise('basic')">▶ Rasgueo Inicial (Básico)</button>
-    <button class="menu-btn" onclick="openExercise('pop')">▶ Rasgueo Pop / Rock</button>
-  </div>
+<div class="exercise">Rasgueo Inicial (Básico)</div>
+
+<div class="rows">
+  <div class="row" id="times"></div>
+  <div class="row" id="arrows"></div>
 </div>
 
-<!-- EJERCICIO -->
-<div class="section" id="exercise">
-  <div class="exercise-title" id="exerciseName"></div>
+<div class="controls">
+  <button id="play">Play / Stop</button><br><br>
+  <input type="range" id="bpm" min="30" max="70" value="40">
+  <div>BPM: <span id="bpmVal">40</span></div>
+  <button class="metro" id="metroBtn">Metrónomo: OFF</button>
+</div>
 
-  <div class="rows">
-    <div class="row" id="times"></div>
-    <div class="row" id="arrows"></div>
-  </div>
-
-  <div class="controls">
-    <button id="play">Play / Stop</button>
-    <button id="metroBtn" class="secondary">Metrónomo: OFF</button><br>
-    <input type="range" id="bpm" min="30" max="70" value="40">
-    <div>BPM: <span id="bpmVal">40</span></div>
-  </div>
-
-  <div class="info" id="infoText"></div>
-
-  <button class="menu-btn" onclick="back()">Volver</button>
+<div class="info">
+Los sonidos no corresponden a ningún acorde.<br>
+Son cuerdas al aire usadas solo como referencia rítmica.
 </div>
 
 <script>
+/* ===== AUDIO ===== */
 let audioCtx, downBuffer, upBuffer;
 let playing=false, step=0, intervalId=null;
-let pattern=[];
 let metroOn=false;
-let metroCount=0;
 
-/* ===== PATRONES ===== */
-const BASIC={
-  name:"Rasgueo Inicial (Básico)",
-  info:"↓ en el pulso, ↑ en el “y”.",
-  pattern:[
-    {l:"1",t:"down",play:true,strong:true},
-    {l:"y",t:"up",play:true},
-    {l:"2",t:"down",play:true},
-    {l:"y",t:"up",play:true},
-    {l:"3",t:"down",play:true},
-    {l:"y",t:"up",play:true},
-    {l:"4",t:"down",play:true},
-    {l:"y",t:"up",play:true}
-  ]
-};
+const pattern=[
+ {l:"1",t:"down",strong:true},
+ {l:"y",t:"up"},
+ {l:"2",t:"down"},
+ {l:"y",t:"up"},
+ {l:"3",t:"down"},
+ {l:"y",t:"up"},
+ {l:"4",t:"down"},
+ {l:"y",t:"up"}
+];
 
-const POP={
-  name:"Rasgueo Pop / Rock",
-  info:"En las flechas apagadas las cuerdas quedan sonando. La mano se mueve, pero no toca las cuerdas.",
-  pattern:[
-    {l:"1",t:"down",play:true,strong:true},
-    {l:"y",t:"up",play:false},
-    {l:"2",t:"down",play:true,soft:true},
-    {l:"y",t:"up",play:true},
-    {l:"3",t:"down",play:false},
-    {l:"y",t:"up",play:true},
-    {l:"4",t:"down",play:true,soft:true},
-    {l:"y",t:"up",play:true}
-  ]
-};
+const GAIN_STRONG=0.9;
+const GAIN_DOWN=0.6;
+const GAIN_UP=0.45;
 
-/* ===== VISUAL ===== */
-const timesEl=document.getElementById("times");
-const arrowsEl=document.getElementById("arrows");
-let timeEls=[], arrowEls=[];
+const times=document.getElementById("times");
+const arrows=document.getElementById("arrows");
 
-function buildVisual(){
-  timesEl.innerHTML=""; arrowsEl.innerHTML="";
-  timeEls=[]; arrowEls=[];
-  pattern.forEach(p=>{
-    const t=document.createElement("div");
-    t.className="time"; t.textContent=p.l;
-    timesEl.appendChild(t); timeEls.push(t);
+pattern.forEach(p=>{
+  const t=document.createElement("div");
+  t.className="time";
+  t.textContent=p.l;
+  times.appendChild(t);
 
-    const a=document.createElement("div");
-    a.className="arrow "+p.t;
-    a.textContent=p.t==="down"?"↓":"↑";
-    arrowsEl.appendChild(a); arrowEls.push(a);
-  });
-}
+  const a=document.createElement("div");
+  a.className="arrow "+p.t;
+  a.textContent=p.t==="down"?"↓":"↑";
+  arrows.appendChild(a);
+});
+
+const timeEls=document.querySelectorAll(".time");
+const arrowEls=document.querySelectorAll(".arrow");
 
 function highlight(i){
   timeEls.forEach(e=>e.classList.remove("active"));
   arrowEls.forEach(e=>e.classList.remove("active"));
   timeEls[i].classList.add("active");
-  if(pattern[i].play) arrowEls[i].classList.add("active");
+  arrowEls[i].classList.add("active");
 }
 
-/* ===== AUDIO ===== */
-async function loadSample(u){
-  const r=await fetch(u);
+async function loadSample(url){
+  const r=await fetch(url);
   return await audioCtx.decodeAudioData(await r.arrayBuffer());
 }
 
-function playStrum(buf,g){
-  const s=audioCtx.createBufferSource();
-  const gn=audioCtx.createGain();
-  s.buffer=buf;
+function playStrum(buffer,gain){
+  const src=audioCtx.createBufferSource();
+  const g=audioCtx.createGain();
+  src.buffer=buffer;
+
   const now=audioCtx.currentTime;
-  gn.gain.setValueAtTime(0,now);
-  gn.gain.linearRampToValueAtTime(g,now+0.004);
-  gn.gain.linearRampToValueAtTime(0,now+buf.duration);
-  s.connect(gn).connect(audioCtx.destination);
-  s.start(now);
+  g.gain.setValueAtTime(0,now);
+  g.gain.linearRampToValueAtTime(gain,now+0.004);
+  g.gain.linearRampToValueAtTime(0,now+buffer.duration);
+
+  src.connect(g).connect(audioCtx.destination);
+  src.start(now);
 }
 
-function metroClick(strong){
+function metroSound(accent){
   const o=audioCtx.createOscillator();
   const g=audioCtx.createGain();
-  o.frequency.value = strong ? 1200 : 800;
-  g.gain.value = strong ? 0.15 : 0.1;
+  o.frequency.value = accent ? 1200 : 700;
+  g.gain.value = accent ? 0.25 : 0.15;
   o.connect(g).connect(audioCtx.destination);
   o.start();
-  o.stop(audioCtx.currentTime+0.05);
+  o.stop(audioCtx.currentTime+0.04);
 }
 
-/* ===== MOTOR ===== */
 function tick(){
   const p=pattern[step];
+  const gain = p.strong ? GAIN_STRONG : (p.t==="down"?GAIN_DOWN:GAIN_UP);
 
-  if(p.play){
-    let gain=0.6;
-    if(p.strong) gain=0.9;
-    if(p.soft) gain=0.55;
-    if(p.t==="up") gain=0.45;
-    playStrum(p.t==="down"?downBuffer:upBuffer,gain);
-  }
-
-  if(metroOn && p.l!=="y"){
-    metroClick(p.l==="1");
-  }
-
+  playStrum(p.t==="down"?downBuffer:upBuffer,gain);
   highlight(step);
+
+  if(metroOn){
+    metroSound(p.l==="1");
+  }
+
   step=(step+1)%pattern.length;
 }
 
-/* ===== CONTROLES ===== */
+/* CONTROLES */
 const playBtn=document.getElementById("play");
-const metroBtn=document.getElementById("metroBtn");
-const bpm=document.getElementById("bpm");
+const bpmSlider=document.getElementById("bpm");
 const bpmVal=document.getElementById("bpmVal");
-bpm.oninput=()=>bpmVal.textContent=bpm.value;
+const metroBtn=document.getElementById("metroBtn");
+
+bpmSlider.oninput=()=>bpmVal.textContent=bpmSlider.value;
 
 metroBtn.onclick=()=>{
   metroOn=!metroOn;
-  metroBtn.textContent="Metrónomo: "+(metroOn?"ON":"OFF");
+  metroBtn.textContent = metroOn ? "Metrónomo: ON" : "Metrónomo: OFF";
+  metroBtn.classList.toggle("active",metroOn);
 };
 
 playBtn.onclick=async()=>{
@@ -284,34 +261,19 @@ playBtn.onclick=async()=>{
     downBuffer=await loadSample("down.wav");
     upBuffer=await loadSample("up.wav");
   }
+
   if(!playing){
-    playing=true; step=0;
-    tick();
-    intervalId=setInterval(tick,60000/(bpm.value*2));
+    playing=true;
+    step=0;
+    tick(); // primer golpe ↓ fuerte
+    intervalId=setInterval(tick,60000/(bpmSlider.value*2));
   }else{
-    playing=false; clearInterval(intervalId);
+    playing=false;
+    clearInterval(intervalId);
     timeEls.forEach(e=>e.classList.remove("active"));
     arrowEls.forEach(e=>e.classList.remove("active"));
   }
 };
-
-/* ===== NAVEGACIÓN ===== */
-function openExercise(type){
-  playing=false; clearInterval(intervalId);
-  document.getElementById("menu").classList.remove("active");
-  document.getElementById("exercise").classList.add("active");
-  const ex = type==="basic"?BASIC:POP;
-  pattern = ex.pattern;
-  document.getElementById("exerciseName").textContent = ex.name;
-  document.getElementById("infoText").textContent = ex.info;
-  buildVisual();
-}
-
-function back(){
-  playing=false; clearInterval(intervalId);
-  document.getElementById("exercise").classList.remove("active");
-  document.getElementById("menu").classList.add("active");
-}
 </script>
 
 </body>
