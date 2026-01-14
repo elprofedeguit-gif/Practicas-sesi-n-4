@@ -88,11 +88,17 @@ button{
   background:#22C55E;
   color:#000;
   border:none;
-  padding:14px 30px;
-  font-size:18px;
+  padding:14px 26px;
+  font-size:16px;
   border-radius:14px;
-  margin:10px;
+  margin:8px;
   cursor:pointer;
+}
+
+button.secondary{
+  background:#1a1a1a;
+  color:#fff;
+  border:1px solid #22C55E;
 }
 
 input[type=range]{width:300px;accent-color:#a855f7;}
@@ -136,7 +142,8 @@ input[type=range]{width:300px;accent-color:#a855f7;}
   </div>
 
   <div class="controls">
-    <button id="play">Play / Stop</button><br><br>
+    <button id="play">Play / Stop</button>
+    <button id="metroBtn" class="secondary">Metrónomo: OFF</button><br>
     <input type="range" id="bpm" min="30" max="70" value="40">
     <div>BPM: <span id="bpmVal">40</span></div>
   </div>
@@ -150,9 +157,11 @@ input[type=range]{width:300px;accent-color:#a855f7;}
 let audioCtx, downBuffer, upBuffer;
 let playing=false, step=0, intervalId=null;
 let pattern=[];
+let metroOn=false;
+let metroCount=0;
 
 /* ===== PATRONES ===== */
-const BASIC = {
+const BASIC={
   name:"Rasgueo Inicial (Básico)",
   info:"↓ en el pulso, ↑ en el “y”.",
   pattern:[
@@ -167,7 +176,7 @@ const BASIC = {
   ]
 };
 
-const POP = {
+const POP={
   name:"Rasgueo Pop / Rock",
   info:"En las flechas apagadas las cuerdas quedan sonando. La mano se mueve, pero no toca las cuerdas.",
   pattern:[
@@ -214,6 +223,7 @@ async function loadSample(u){
   const r=await fetch(u);
   return await audioCtx.decodeAudioData(await r.arrayBuffer());
 }
+
 function playStrum(buf,g){
   const s=audioCtx.createBufferSource();
   const gn=audioCtx.createGain();
@@ -226,9 +236,20 @@ function playStrum(buf,g){
   s.start(now);
 }
 
+function metroClick(strong){
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  o.frequency.value = strong ? 1200 : 800;
+  g.gain.value = strong ? 0.15 : 0.1;
+  o.connect(g).connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime+0.05);
+}
+
 /* ===== MOTOR ===== */
 function tick(){
   const p=pattern[step];
+
   if(p.play){
     let gain=0.6;
     if(p.strong) gain=0.9;
@@ -236,15 +257,26 @@ function tick(){
     if(p.t==="up") gain=0.45;
     playStrum(p.t==="down"?downBuffer:upBuffer,gain);
   }
+
+  if(metroOn && p.l!=="y"){
+    metroClick(p.l==="1");
+  }
+
   highlight(step);
   step=(step+1)%pattern.length;
 }
 
 /* ===== CONTROLES ===== */
 const playBtn=document.getElementById("play");
+const metroBtn=document.getElementById("metroBtn");
 const bpm=document.getElementById("bpm");
 const bpmVal=document.getElementById("bpmVal");
 bpm.oninput=()=>bpmVal.textContent=bpm.value;
+
+metroBtn.onclick=()=>{
+  metroOn=!metroOn;
+  metroBtn.textContent="Metrónomo: "+(metroOn?"ON":"OFF");
+};
 
 playBtn.onclick=async()=>{
   if(!audioCtx){
