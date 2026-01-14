@@ -10,7 +10,6 @@
   --bg:#141414;
   --green:#22C55E;
   --violet:#C9A9FF;
-  --gray:#9ca3af;
 }
 
 body{
@@ -25,7 +24,7 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding-top:24px;
+  padding-top:60px;
   box-sizing:border-box;
 }
 
@@ -33,26 +32,25 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  margin-bottom:20px;
+  margin-bottom:24px;
 }
 
 .header img{
   width:150px;
-  margin-bottom:10px;
+  margin-bottom:12px;
 }
 
 h1{
   color:var(--green);
   margin:0;
   font-weight:600;
-  text-align:center;
 }
 
 .subtitle{
   color:var(--violet);
   font-style:italic;
   font-size:15px;
-  margin:6px 0 22px;
+  margin:6px 0 26px;
 }
 
 .container{
@@ -77,17 +75,13 @@ h1{
 
 .section{ display:none; }
 
-/* ===== EJERCICIO ===== */
-
 .exercise-title{
   font-size:20px;
   font-weight:600;
   margin-bottom:18px;
 }
 
-.rows{
-  margin:26px 0;
-}
+.rows{ margin:26px 0; }
 
 .row{
   display:flex;
@@ -97,31 +91,24 @@ h1{
   margin:6px auto;
 }
 
-.time, .arrow{
+.time,.arrow{
   width:40px;
   opacity:.35;
-  transition:.1s;
+  transition:.12s;
 }
-
-.time{
-  font-size:22px;
-}
-.arrow{
-  font-size:32px;
-}
+.time{ font-size:22px; }
+.arrow{ font-size:32px; }
 
 .arrow.down{ color:var(--green); }
 .arrow.up{ color:var(--violet); }
 
 .active{
   opacity:1;
-  transform:scale(1.25);
-  text-shadow:0 0 12px currentColor;
+  transform:scale(1.2);
+  text-shadow:0 0 10px currentColor;
 }
 
-.controls{
-  margin-top:10px;
-}
+.controls{ margin-top:10px; }
 
 button.control{
   background:var(--green);
@@ -133,12 +120,15 @@ button.control{
   margin:10px;
   cursor:pointer;
 }
-button.control:active{ transform:scale(.96); }
 
 button.metro{
-  background:#222;
+  background:#1e1e1e;
   color:#fff;
-  border:1px solid var(--green);
+  border:1.5px solid var(--green);
+  padding:12px 26px;
+  font-size:15px;
+  border-radius:12px;
+  margin-top:6px;
 }
 button.metro.active{
   background:var(--green);
@@ -162,7 +152,6 @@ input[type=range]{
 <body>
 <div class="page">
 
-<!-- HEADER -->
 <div class="header">
   <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png">
   <h1>Zona de Práctica – Sesión 4 ⭐</h1>
@@ -171,31 +160,34 @@ input[type=range]{
 
 <!-- MENU -->
 <div class="container section" id="menu" style="display:block">
-  <button class="menu-btn" onclick="show('basico')">▶ Rasgueo Inicial (Básico)</button>
-  <button class="menu-btn" onclick="show('pop')">▶ Rasgueo POP / Rock</button>
+  <button class="menu-btn" onclick="openExercise('basic')">▶ Rasgueo Inicial (Básico)</button>
+  <button class="menu-btn" onclick="openExercise('pop')">▶ Rasgueo POP / Rock</button>
 </div>
 
-<!-- EJERCICIO BASE -->
-<div class="container section" id="basico">
+<!-- BASICO -->
+<div class="container section" id="basic">
   <div class="exercise-title">Rasgueo Inicial (Básico)</div>
-  <div class="rows" id="rows-basico"></div>
+  <div class="rows" id="rowsBasic"></div>
+
   <div class="controls">
     <button class="control" onclick="togglePlay()">Play / Stop</button><br>
     <input type="range" id="bpm" min="30" max="70" value="40">
     <div>BPM: <span id="bpmVal">40</span></div>
-    <button class="control metro" id="metroBtn">Metrónomo: OFF</button><br>
+    <button class="metro" id="metroBtn">Metrónomo: OFF</button><br>
     <button class="control" onclick="back()">Volver</button>
   </div>
 </div>
 
-<!-- EJERCICIO POP -->
+<!-- POP -->
 <div class="container section" id="pop">
   <div class="exercise-title">Rasgueo POP / Rock</div>
-  <div class="rows" id="rows-pop"></div>
+  <div class="rows" id="rowsPop"></div>
+
   <div class="controls">
     <button class="control" onclick="togglePlay()">Play / Stop</button><br>
-    <input type="range" min="30" max="70" value="60">
+    <input type="range" min="50" max="80" value="60">
     <div>BPM sugerido: 60</div>
+    <button class="metro" id="metroBtnPop">Metrónomo: OFF</button><br>
     <button class="control" onclick="back()">Volver</button>
   </div>
 </div>
@@ -208,12 +200,13 @@ Son cuerdas al aire usadas solo como referencia rítmica.
 </div>
 
 <script>
-/* ===== AUDIO ===== */
 let ctx, downBuf, upBuf;
 let playing=false, step=0, timer;
+let currentPattern=[];
 let metroOn=false;
 
-const pattern=[
+/* PATRONES */
+const BASIC=[
  {l:"1",t:"down",strong:true},
  {l:"y",t:"up"},
  {l:"2",t:"down"},
@@ -224,38 +217,39 @@ const pattern=[
  {l:"y",t:"up"}
 ];
 
-function buildRows(id){
-  const el=document.getElementById(id);
-  el.innerHTML="";
-  const row1=document.createElement("div");
-  row1.className="row";
-  const row2=document.createElement("div");
-  row2.className="row";
+const POP=[
+ {l:"1",t:"down",strong:true},
+ {l:"2",t:"down"},
+ {l:"y",t:"up"},
+ {l:"3",t:"up"},
+ {l:"4",t:"down"},
+ {l:"y",t:"up"}
+];
+
+function buildRows(target,pattern){
+  target.innerHTML="";
+  const r1=document.createElement("div");
+  r1.className="row";
+  const r2=document.createElement("div");
+  r2.className="row";
   pattern.forEach(p=>{
     const t=document.createElement("div");
     t.className="time";
     t.textContent=p.l;
-    row1.appendChild(t);
-
+    r1.appendChild(t);
     const a=document.createElement("div");
     a.className="arrow "+p.t;
     a.textContent=p.t==="down"?"↓":"↑";
-    row2.appendChild(a);
+    r2.appendChild(a);
   });
-  el.appendChild(row1);
-  el.appendChild(row2);
+  target.appendChild(r1);
+  target.appendChild(r2);
 }
-buildRows("rows-basico");
-buildRows("rows-pop");
-
-const times=document.querySelectorAll(".time");
-const arrows=document.querySelectorAll(".arrow");
 
 function highlight(i){
-  times.forEach(e=>e.classList.remove("active"));
-  arrows.forEach(e=>e.classList.remove("active"));
-  times[i].classList.add("active");
-  arrows[i].classList.add("active");
+  document.querySelectorAll(".time,.arrow").forEach(e=>e.classList.remove("active"));
+  document.querySelectorAll(".time")[i]?.classList.add("active");
+  document.querySelectorAll(".arrow")[i]?.classList.add("active");
 }
 
 async function load(url){
@@ -282,11 +276,11 @@ function metro(accent){
 }
 
 function tick(){
-  const p=pattern[step];
-  playBuf(p.t==="down"?downBuf:upBuf, p.strong?0.9:0.5);
+  const p=currentPattern[step];
+  playBuf(p.t==="down"?downBuf:upBuf,p.strong?0.9:0.5);
   highlight(step);
   if(metroOn) metro(p.l==="1");
-  step=(step+1)%pattern.length;
+  step=(step+1)%currentPattern.length;
 }
 
 async function togglePlay(){
@@ -299,16 +293,24 @@ async function togglePlay(){
     playing=true;
     step=0;
     tick();
-    timer=setInterval(tick,60000/(document.getElementById("bpm").value*2));
+    timer=setInterval(tick,60000/(document.getElementById("bpm")?.value*2||500));
   }else{
     playing=false;
     clearInterval(timer);
   }
 }
 
-function show(id){
-  document.querySelectorAll(".section").forEach(s=>s.style.display="none");
-  document.getElementById(id).style.display="block";
+function openExercise(type){
+  back();
+  document.getElementById(type).style.display="block";
+  currentPattern = type==="basic"?BASIC:POP;
+  buildRows(
+    document.getElementById(type==="basic"?"rowsBasic":"rowsPop"),
+    currentPattern
+  );
+  metroOn=false;
+  document.getElementById("metroBtn")?.classList.remove("active");
+  document.getElementById("metroBtnPop")?.classList.remove("active");
 }
 
 function back(){
@@ -318,14 +320,19 @@ function back(){
   document.getElementById("menu").style.display="block";
 }
 
-document.getElementById("bpm").oninput=e=>{
-  document.getElementById("bpmVal").textContent=e.target.value;
-};
-
 document.getElementById("metroBtn").onclick=()=>{
   metroOn=!metroOn;
   metroBtn.textContent=metroOn?"Metrónomo: ON":"Metrónomo: OFF";
   metroBtn.classList.toggle("active",metroOn);
+};
+document.getElementById("metroBtnPop").onclick=()=>{
+  metroOn=!metroOn;
+  metroBtnPop.textContent=metroOn?"Metrónomo: ON":"Metrónomo: OFF";
+  metroBtnPop.classList.toggle("active",metroOn);
+};
+
+document.getElementById("bpm").oninput=e=>{
+  document.getElementById("bpmVal").textContent=e.target.value;
 };
 </script>
 
