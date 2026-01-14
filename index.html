@@ -2,316 +2,228 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Prácticas guiadas – Sesión 4</title>
+<title>Zona de Práctica – Sesión 3 ⭐</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-  margin:0;
+:root{
+  --bg:#141414;
+  --green:#22C55E;
+  --green-light:#6aff9c;
+  --violet:#C9A9FF;
+  --yellow:#E0BA30;
+  --orange:orange;
+}
+body{ margin:0; background:var(--bg); color:#fff; font-family:Arial,sans-serif; }
+.page{
   min-height:100vh;
-  background:radial-gradient(circle at top,#1a1a1a,#0b0b0b);
-  color:#fff;
-  font-family:Arial,sans-serif;
   display:flex;
   flex-direction:column;
   align-items:center;
-  text-align:center;
+  padding-top:40px;
+  box-sizing:border-box;
 }
 
-.logo{margin-top:24px;}
-.logo img{width:150px;opacity:.95;}
+.header{ display:flex; flex-direction:column; align-items:center; }
+.header img{ width:150px; max-width:80%; margin-bottom:12px; }
 
-h1{margin:18px 0 4px;color:#22C55E;}
-h2{
-  margin:0;
-  font-style:italic;
-  font-weight:normal;
-  font-size:16px;
-  color:#a855f7;
-}
+h1{ color:var(--green); margin:0; font-weight:600; text-align:center; }
+.subtitle{ color:var(--violet); font-style:italic; font-size:clamp(14px,4vw,16px); margin:6px 0 24px; }
 
-.menu{
-  margin-top:40px;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-}
-
+.container{ max-width:720px; width:100%; padding:16px; text-align:center; box-sizing:border-box; }
 .menu-btn{
-  background:#111;
-  border:1.5px solid #22C55E;
-  border-radius:16px;
-  padding:18px 28px;
-  font-size:17px;
+  width:100%; max-width:420px; background:#1e1e1e;
+  border:1.5px solid var(--green); border-radius:12px;
+  padding:16px; margin:12px auto; cursor:pointer;
+  color:#fff; font-size:16px; font-weight:600;
+}
+.menu-btn:active{ transform:scale(.97); }
+
+.section{ display:none; }
+
+.circle{ width:150px; height:150px; border-radius:50%; background:#222; margin:32px auto 24px; }
+.circle.on{ background:var(--green); }
+
+.controls{ margin:16px auto; max-width:300px; }
+input[type=range]{ width:100%; }
+
+button.control{
+  background:var(--green); color:#000; border:none; border-radius:12px;
+  padding:12px 26px; margin:10px; cursor:pointer;
+  font-size:15px; font-weight:600;
+}
+button.control:active{ transform:scale(.96); }
+button.control.playing{ background:var(--green-light); }
+
+button.metro{
+  background:#333;
   color:#fff;
-  cursor:pointer;
-  width:320px;
+  border:1px solid var(--green);
 }
 
-.exercise-title{
-  margin-top:24px;
-  font-size:20px;
-  font-weight:600;
-}
-
-.rows{margin:28px 0;}
-.row{
-  display:flex;
-  justify-content:space-between;
-  width:420px;
-  margin:8px auto;
-}
-
-.time{
-  width:40px;
-  font-size:22px;
-  opacity:.35;
-}
-.time.active{opacity:1;transform:scale(1.2);}
-
-.arrow{
-  width:40px;
-  font-size:32px;
-  opacity:.25;
-  transition:.1s;
-}
-.arrow.down{color:#22C55E;}
-.arrow.up{color:#a855f7;}
-.arrow.active{
-  opacity:1;
-  transform:scale(1.25);
-  text-shadow:0 0 12px currentColor;
-}
-
-.controls{margin-top:10px;}
-button{
-  background:#22C55E;
+button.metro.active{
+  background:var(--green);
   color:#000;
-  border:none;
-  padding:14px 26px;
-  font-size:16px;
-  border-radius:14px;
-  margin:8px;
-  cursor:pointer;
 }
 
-button.secondary{
-  background:#1a1a1a;
-  color:#fff;
-  border:1px solid #22C55E;
-}
+.progression{ display:flex; justify-content:space-between; margin:20px 0 24px; }
+.chord{ flex:1; margin:0 4px; padding:12px 6px; border-radius:10px; background:#222; cursor:pointer; font-size:14px; }
+.chord.selected{ outline:2px solid var(--violet); }
+.chord.active{ background:var(--green); color:#000; }
 
-input[type=range]{width:300px;accent-color:#a855f7;}
+.count{ display:flex; justify-content:center; font-size:42px; margin-bottom:20px; }
+.count span{ width:36px; opacity:.3; }
+.count .one{ color:var(--yellow); opacity:1; }
+.count .other{ color:var(--orange); opacity:1; }
 
-.section{display:none;}
-.section.active{display:block;}
-
-.info{
-  margin-top:26px;
-  font-size:14px;
-  opacity:.75;
-  max-width:420px;
-}
+@media(max-width:600px){ .count{ font-size:34px; } }
 </style>
 </head>
 
 <body>
+<div class="page">
 
-<div class="logo">
+<div class="header">
   <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png">
+  <h1>Zona de Práctica – Sesión 3 ⭐</h1>
+  <div class="subtitle">Cuando la música comienza</div>
 </div>
 
-<h1>Prácticas guiadas – Sesión 4</h1>
-<h2>El motor ya está en marcha</h2>
+<div class="container section" id="menu" style="display:block">
+  <button class="menu-btn" onclick="show('dig1')">▶ Digitación – Ejercicio 1</button>
+  <button class="menu-btn" onclick="show('dig2')">▶ Digitación – Ejercicio 2</button>
+  <button class="menu-btn" onclick="show('letitbe')">▶ Let It Be – Práctica de acordes</button>
+</div>
 
-<!-- MENÚ -->
-<div class="section active" id="menu">
-  <div class="menu">
-    <button class="menu-btn" onclick="openExercise('basic')">▶ Rasgueo Inicial (Básico)</button>
-    <button class="menu-btn" onclick="openExercise('pop')">▶ Rasgueo Pop / Rock</button>
+<!-- LET IT BE -->
+<div class="container section" id="letitbe">
+  <h2>Let It Be – Práctica de acordes</h2>
+
+  <div class="progression">
+    <div class="chord">A</div><div class="chord">%</div>
+    <div class="chord">E</div><div class="chord">%</div>
+    <div class="chord">A</div><div class="chord">%</div>
+    <div class="chord">D</div><div class="chord">%</div>
   </div>
-</div>
 
-<!-- EJERCICIO -->
-<div class="section" id="exercise">
-  <div class="exercise-title" id="exerciseName"></div>
-
-  <div class="rows">
-    <div class="row" id="times"></div>
-    <div class="row" id="arrows"></div>
+  <div class="count">
+    <span>1</span><span>2</span><span>3</span><span>4</span>
   </div>
 
   <div class="controls">
-    <button id="play">Play / Stop</button>
-    <button id="metroBtn" class="secondary">Metrónomo: OFF</button><br>
-    <input type="range" id="bpm" min="30" max="70" value="40">
-    <div>BPM: <span id="bpmVal">40</span></div>
+    BPM: <span id="bpmVal">45</span>
+    <input type="range" min="45" max="60" value="45" id="bpm">
   </div>
 
-  <div class="info" id="infoText"></div>
+  <button class="control" id="playLet" onclick="toggleLet()">Play / Stop</button>
+  <button class="control metro" id="metroBtn" onclick="toggleMetro()">Metrónomo: OFF</button>
+  <button class="control" onclick="back()">Volver</button>
+</div>
 
-  <button class="menu-btn" onclick="back()">Volver</button>
 </div>
 
 <script>
-let audioCtx, downBuffer, upBuffer;
-let playing=false, step=0, intervalId=null;
-let pattern=[];
-let metroOn=false;
-let metroCount=0;
-
-/* ===== PATRONES ===== */
-const BASIC={
-  name:"Rasgueo Inicial (Básico)",
-  info:"↓ en el pulso, ↑ en el “y”.",
-  pattern:[
-    {l:"1",t:"down",play:true,strong:true},
-    {l:"y",t:"up",play:true},
-    {l:"2",t:"down",play:true},
-    {l:"y",t:"up",play:true},
-    {l:"3",t:"down",play:true},
-    {l:"y",t:"up",play:true},
-    {l:"4",t:"down",play:true},
-    {l:"y",t:"up",play:true}
-  ]
-};
-
-const POP={
-  name:"Rasgueo Pop / Rock",
-  info:"En las flechas apagadas las cuerdas quedan sonando. La mano se mueve, pero no toca las cuerdas.",
-  pattern:[
-    {l:"1",t:"down",play:true,strong:true},
-    {l:"y",t:"up",play:false},
-    {l:"2",t:"down",play:true,soft:true},
-    {l:"y",t:"up",play:true},
-    {l:"3",t:"down",play:false},
-    {l:"y",t:"up",play:true},
-    {l:"4",t:"down",play:true,soft:true},
-    {l:"y",t:"up",play:true}
-  ]
-};
-
-/* ===== VISUAL ===== */
-const timesEl=document.getElementById("times");
-const arrowsEl=document.getElementById("arrows");
-let timeEls=[], arrowEls=[];
-
-function buildVisual(){
-  timesEl.innerHTML=""; arrowsEl.innerHTML="";
-  timeEls=[]; arrowEls=[];
-  pattern.forEach(p=>{
-    const t=document.createElement("div");
-    t.className="time"; t.textContent=p.l;
-    timesEl.appendChild(t); timeEls.push(t);
-
-    const a=document.createElement("div");
-    a.className="arrow "+p.t;
-    a.textContent=p.t==="down"?"↓":"↑";
-    arrowsEl.appendChild(a); arrowEls.push(a);
-  });
-}
-
-function highlight(i){
-  timeEls.forEach(e=>e.classList.remove("active"));
-  arrowEls.forEach(e=>e.classList.remove("active"));
-  timeEls[i].classList.add("active");
-  if(pattern[i].play) arrowEls[i].classList.add("active");
-}
-
 /* ===== AUDIO ===== */
-async function loadSample(u){
-  const r=await fetch(u);
-  return await audioCtx.decodeAudioData(await r.arrayBuffer());
-}
-
-function playStrum(buf,g){
-  const s=audioCtx.createBufferSource();
-  const gn=audioCtx.createGain();
-  s.buffer=buf;
-  const now=audioCtx.currentTime;
-  gn.gain.setValueAtTime(0,now);
-  gn.gain.linearRampToValueAtTime(g,now+0.004);
-  gn.gain.linearRampToValueAtTime(0,now+buf.duration);
-  s.connect(gn).connect(audioCtx.destination);
-  s.start(now);
-}
-
-function metroClick(strong){
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.frequency.value = strong ? 1200 : 800;
-  g.gain.value = strong ? 0.15 : 0.1;
-  o.connect(g).connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime+0.05);
-}
-
-/* ===== MOTOR ===== */
-function tick(){
-  const p=pattern[step];
-
-  if(p.play){
-    let gain=0.6;
-    if(p.strong) gain=0.9;
-    if(p.soft) gain=0.55;
-    if(p.t==="up") gain=0.45;
-    playStrum(p.t==="down"?downBuffer:upBuffer,gain);
+let ctx=null;
+function ensureAudio(){
+  if(!ctx){
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
   }
-
-  if(metroOn && p.l!=="y"){
-    metroClick(p.l==="1");
-  }
-
-  highlight(step);
-  step=(step+1)%pattern.length;
 }
 
-/* ===== CONTROLES ===== */
-const playBtn=document.getElementById("play");
-const metroBtn=document.getElementById("metroBtn");
+function clickSound(vol){
+  ensureAudio();
+  const o=ctx.createOscillator();
+  const g=ctx.createGain();
+  o.frequency.value=900;
+  g.gain.value=vol;
+  o.connect(g); g.connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+0.05);
+}
+
+/* 🔔 METRÓNOMO */
+let metroOn=false;
+function metroSound(accent){
+  ensureAudio();
+  const o=ctx.createOscillator();
+  const g=ctx.createGain();
+  o.frequency.value = accent ? 1200 : 700;
+  g.gain.value = accent ? 0.25 : 0.15;
+  o.connect(g); g.connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+0.04);
+}
+function toggleMetro(){
+  metroOn=!metroOn;
+  metroBtn.textContent = metroOn ? "Metrónomo: ON" : "Metrónomo: OFF";
+  metroBtn.classList.toggle("active", metroOn);
+}
+
+/* ===== NAVEGACIÓN ===== */
+function show(id){
+  stopAll();
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+function back(){ stopAll(); show('menu'); }
+
+/* ===== LET IT BE ===== */
 const bpm=document.getElementById("bpm");
 const bpmVal=document.getElementById("bpmVal");
 bpm.oninput=()=>bpmVal.textContent=bpm.value;
 
-metroBtn.onclick=()=>{
-  metroOn=!metroOn;
-  metroBtn.textContent="Metrónomo: "+(metroOn?"ON":"OFF");
-};
+const countSpans=document.querySelectorAll(".count span");
+const chords=[...document.querySelectorAll(".chord")];
+let selectedChord=0;
+chords.forEach((c,i)=>{
+  c.onclick=()=>{
+    chords.forEach(x=>x.classList.remove("selected"));
+    c.classList.add("selected"); selectedChord=i;
+  };
+});
 
-playBtn.onclick=async()=>{
-  if(!audioCtx){
-    audioCtx=new AudioContext();
-    downBuffer=await loadSample("down.wav");
-    upBuffer=await loadSample("up.wav");
-  }
-  if(!playing){
-    playing=true; step=0;
-    tick();
-    intervalId=setInterval(tick,60000/(bpm.value*2));
-  }else{
-    playing=false; clearInterval(intervalId);
-    timeEls.forEach(e=>e.classList.remove("active"));
-    arrowEls.forEach(e=>e.classList.remove("active"));
-  }
-};
+let timer=null, playing=false, beat=0, chordIndex=0;
 
-/* ===== NAVEGACIÓN ===== */
-function openExercise(type){
-  playing=false; clearInterval(intervalId);
-  document.getElementById("menu").classList.remove("active");
-  document.getElementById("exercise").classList.add("active");
-  const ex = type==="basic"?BASIC:POP;
-  pattern = ex.pattern;
-  document.getElementById("exerciseName").textContent = ex.name;
-  document.getElementById("infoText").textContent = ex.info;
-  buildVisual();
+function highlight(i){
+  countSpans.forEach(s=>s.className="");
+  if(i===0) countSpans[0].classList.add("one");
+  else countSpans[i].classList.add("other");
 }
 
-function back(){
-  playing=false; clearInterval(intervalId);
-  document.getElementById("exercise").classList.remove("active");
-  document.getElementById("menu").classList.add("active");
+function toggleLet(){
+  if(playing){ stopLet(); return; }
+
+  ensureAudio();
+  playing=true; playLet.classList.add("playing");
+  beat=0; chordIndex=selectedChord;
+
+  const interval=60000/bpm.value;
+  timer=setInterval(()=>{
+    highlight(beat);
+
+    if(metroOn){
+      metroSound(beat===0);
+    }
+
+    if(beat===0){
+      chords.forEach(c=>c.classList.remove("active"));
+      chords[chordIndex].classList.add("active");
+      chordIndex=(chordIndex+1)%chords.length;
+      clickSound(.3);
+    }else{
+      clickSound(.15);
+    }
+
+    beat=(beat+1)%4;
+  }, interval);
 }
+
+function stopLet(){
+  clearInterval(timer);
+  playing=false;
+  playLet.classList.remove("playing");
+}
+
+function stopAll(){ stopLet(); }
 </script>
 
 </body>
