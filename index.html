@@ -7,97 +7,133 @@
 
 <style>
 :root{
-  --bg:#0f0f0f;
+  --bg:#141414;
   --green:#22C55E;
-  --violet:#A855F7;
+  --violet:#C9A9FF;
   --gray:#9ca3af;
 }
 
 body{
   margin:0;
-  min-height:100vh;
-  background:radial-gradient(circle at top,#1a1a1a,#0b0b0b);
+  background:var(--bg);
   color:#fff;
   font-family:Arial,sans-serif;
+}
+
+.page{
+  min-height:100vh;
   display:flex;
   flex-direction:column;
   align-items:center;
-  text-align:center;
+  padding-top:24px;
+  box-sizing:border-box;
 }
 
-.logo{ margin-top:20px; }
-.logo img{ width:140px; }
+.header{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.header img{
+  width:150px;
+  margin-bottom:10px;
+}
 
 h1{
-  margin:18px 0 4px;
   color:var(--green);
+  margin:0;
   font-weight:600;
+  text-align:center;
 }
 
 .subtitle{
   color:var(--violet);
   font-style:italic;
-  font-size:16px;
-  margin-bottom:8px;
+  font-size:15px;
+  margin:6px 0 22px;
 }
 
-.exercise{
-  margin-top:16px;
+.container{
+  width:100%;
+  max-width:520px;
+  text-align:center;
+}
+
+.menu-btn{
+  width:100%;
+  background:#1e1e1e;
+  border:1.5px solid var(--green);
+  border-radius:14px;
+  padding:18px;
+  margin:14px 0;
+  color:#fff;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+}
+.menu-btn:active{ transform:scale(.97); }
+
+.section{ display:none; }
+
+/* ===== EJERCICIO ===== */
+
+.exercise-title{
   font-size:20px;
   font-weight:600;
+  margin-bottom:18px;
 }
 
-/* FILAS */
-.rows{ margin:28px 0; }
+.rows{
+  margin:26px 0;
+}
 
 .row{
   display:flex;
   justify-content:space-between;
   width:420px;
   max-width:90vw;
-  margin:8px auto;
+  margin:6px auto;
+}
+
+.time, .arrow{
+  width:40px;
+  opacity:.35;
+  transition:.1s;
 }
 
 .time{
-  width:40px;
   font-size:22px;
-  opacity:.35;
-  transition:.1s;
 }
-.time.active{
-  opacity:1;
-  transform:scale(1.2);
+.arrow{
+  font-size:32px;
 }
 
-.arrow{
-  width:40px;
-  font-size:32px;
-  opacity:.35;
-  transition:.1s;
-}
 .arrow.down{ color:var(--green); }
 .arrow.up{ color:var(--violet); }
 
-.arrow.active{
+.active{
   opacity:1;
   transform:scale(1.25);
   text-shadow:0 0 12px currentColor;
 }
 
-/* CONTROLES */
-.controls{ margin-top:10px; }
+.controls{
+  margin-top:10px;
+}
 
-button{
+button.control{
   background:var(--green);
   color:#000;
   border:none;
   padding:14px 30px;
-  font-size:18px;
+  font-size:17px;
   border-radius:14px;
   margin:10px;
   cursor:pointer;
 }
-button:active{ transform:scale(.96); }
+button.control:active{ transform:scale(.96); }
 
 button.metro{
   background:#222;
@@ -116,35 +152,52 @@ input[type=range]{
 }
 
 .info{
-  margin-top:26px;
-  font-size:14px;
+  margin-top:22px;
+  font-size:13px;
   opacity:.7;
-  max-width:420px;
 }
 </style>
 </head>
 
 <body>
+<div class="page">
 
-<div class="logo">
+<!-- HEADER -->
+<div class="header">
   <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png">
+  <h1>Zona de Práctica – Sesión 4 ⭐</h1>
+  <div class="subtitle">El motor ya está en marcha</div>
 </div>
 
-<h1>Zona de Práctica – Sesión 4 ⭐</h1>
-<div class="subtitle">El motor ya está en marcha</div>
-
-<div class="exercise">Rasgueo Inicial (Básico)</div>
-
-<div class="rows">
-  <div class="row" id="times"></div>
-  <div class="row" id="arrows"></div>
+<!-- MENU -->
+<div class="container section" id="menu" style="display:block">
+  <button class="menu-btn" onclick="show('basico')">▶ Rasgueo Inicial (Básico)</button>
+  <button class="menu-btn" onclick="show('pop')">▶ Rasgueo POP / Rock</button>
 </div>
 
-<div class="controls">
-  <button id="play">Play / Stop</button><br><br>
-  <input type="range" id="bpm" min="30" max="70" value="40">
-  <div>BPM: <span id="bpmVal">40</span></div>
-  <button class="metro" id="metroBtn">Metrónomo: OFF</button>
+<!-- EJERCICIO BASE -->
+<div class="container section" id="basico">
+  <div class="exercise-title">Rasgueo Inicial (Básico)</div>
+  <div class="rows" id="rows-basico"></div>
+  <div class="controls">
+    <button class="control" onclick="togglePlay()">Play / Stop</button><br>
+    <input type="range" id="bpm" min="30" max="70" value="40">
+    <div>BPM: <span id="bpmVal">40</span></div>
+    <button class="control metro" id="metroBtn">Metrónomo: OFF</button><br>
+    <button class="control" onclick="back()">Volver</button>
+  </div>
+</div>
+
+<!-- EJERCICIO POP -->
+<div class="container section" id="pop">
+  <div class="exercise-title">Rasgueo POP / Rock</div>
+  <div class="rows" id="rows-pop"></div>
+  <div class="controls">
+    <button class="control" onclick="togglePlay()">Play / Stop</button><br>
+    <input type="range" min="30" max="70" value="60">
+    <div>BPM sugerido: 60</div>
+    <button class="control" onclick="back()">Volver</button>
+  </div>
 </div>
 
 <div class="info">
@@ -152,10 +205,12 @@ Los sonidos no corresponden a ningún acorde.<br>
 Son cuerdas al aire usadas solo como referencia rítmica.
 </div>
 
+</div>
+
 <script>
 /* ===== AUDIO ===== */
-let audioCtx, downBuffer, upBuffer;
-let playing=false, step=0, intervalId=null;
+let ctx, downBuf, upBuf;
+let playing=false, step=0, timer;
 let metroOn=false;
 
 const pattern=[
@@ -169,110 +224,108 @@ const pattern=[
  {l:"y",t:"up"}
 ];
 
-const GAIN_STRONG=0.9;
-const GAIN_DOWN=0.6;
-const GAIN_UP=0.45;
+function buildRows(id){
+  const el=document.getElementById(id);
+  el.innerHTML="";
+  const row1=document.createElement("div");
+  row1.className="row";
+  const row2=document.createElement("div");
+  row2.className="row";
+  pattern.forEach(p=>{
+    const t=document.createElement("div");
+    t.className="time";
+    t.textContent=p.l;
+    row1.appendChild(t);
 
-const times=document.getElementById("times");
-const arrows=document.getElementById("arrows");
+    const a=document.createElement("div");
+    a.className="arrow "+p.t;
+    a.textContent=p.t==="down"?"↓":"↑";
+    row2.appendChild(a);
+  });
+  el.appendChild(row1);
+  el.appendChild(row2);
+}
+buildRows("rows-basico");
+buildRows("rows-pop");
 
-pattern.forEach(p=>{
-  const t=document.createElement("div");
-  t.className="time";
-  t.textContent=p.l;
-  times.appendChild(t);
-
-  const a=document.createElement("div");
-  a.className="arrow "+p.t;
-  a.textContent=p.t==="down"?"↓":"↑";
-  arrows.appendChild(a);
-});
-
-const timeEls=document.querySelectorAll(".time");
-const arrowEls=document.querySelectorAll(".arrow");
+const times=document.querySelectorAll(".time");
+const arrows=document.querySelectorAll(".arrow");
 
 function highlight(i){
-  timeEls.forEach(e=>e.classList.remove("active"));
-  arrowEls.forEach(e=>e.classList.remove("active"));
-  timeEls[i].classList.add("active");
-  arrowEls[i].classList.add("active");
+  times.forEach(e=>e.classList.remove("active"));
+  arrows.forEach(e=>e.classList.remove("active"));
+  times[i].classList.add("active");
+  arrows[i].classList.add("active");
 }
 
-async function loadSample(url){
+async function load(url){
   const r=await fetch(url);
-  return await audioCtx.decodeAudioData(await r.arrayBuffer());
+  return await ctx.decodeAudioData(await r.arrayBuffer());
 }
 
-function playStrum(buffer,gain){
-  const src=audioCtx.createBufferSource();
-  const g=audioCtx.createGain();
-  src.buffer=buffer;
-
-  const now=audioCtx.currentTime;
-  g.gain.setValueAtTime(0,now);
-  g.gain.linearRampToValueAtTime(gain,now+0.004);
-  g.gain.linearRampToValueAtTime(0,now+buffer.duration);
-
-  src.connect(g).connect(audioCtx.destination);
-  src.start(now);
+function playBuf(buf,g){
+  const s=ctx.createBufferSource();
+  const gain=ctx.createGain();
+  s.buffer=buf;
+  gain.gain.value=g;
+  s.connect(gain).connect(ctx.destination);
+  s.start();
 }
 
-function metroSound(accent){
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.frequency.value = accent ? 1200 : 700;
-  g.gain.value = accent ? 0.25 : 0.15;
-  o.connect(g).connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime+0.04);
+function metro(accent){
+  const o=ctx.createOscillator();
+  const g=ctx.createGain();
+  o.frequency.value=accent?1200:700;
+  g.gain.value=accent?0.25:0.15;
+  o.connect(g).connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+0.04);
 }
 
 function tick(){
   const p=pattern[step];
-  const gain = p.strong ? GAIN_STRONG : (p.t==="down"?GAIN_DOWN:GAIN_UP);
-
-  playStrum(p.t==="down"?downBuffer:upBuffer,gain);
+  playBuf(p.t==="down"?downBuf:upBuf, p.strong?0.9:0.5);
   highlight(step);
-
-  if(metroOn){
-    metroSound(p.l==="1");
-  }
-
+  if(metroOn) metro(p.l==="1");
   step=(step+1)%pattern.length;
 }
 
-/* CONTROLES */
-const playBtn=document.getElementById("play");
-const bpmSlider=document.getElementById("bpm");
-const bpmVal=document.getElementById("bpmVal");
-const metroBtn=document.getElementById("metroBtn");
-
-bpmSlider.oninput=()=>bpmVal.textContent=bpmSlider.value;
-
-metroBtn.onclick=()=>{
-  metroOn=!metroOn;
-  metroBtn.textContent = metroOn ? "Metrónomo: ON" : "Metrónomo: OFF";
-  metroBtn.classList.toggle("active",metroOn);
-};
-
-playBtn.onclick=async()=>{
-  if(!audioCtx){
-    audioCtx=new AudioContext();
-    downBuffer=await loadSample("down.wav");
-    upBuffer=await loadSample("up.wav");
+async function togglePlay(){
+  if(!ctx){
+    ctx=new AudioContext();
+    downBuf=await load("down.wav");
+    upBuf=await load("up.wav");
   }
-
   if(!playing){
     playing=true;
     step=0;
-    tick(); // primer golpe ↓ fuerte
-    intervalId=setInterval(tick,60000/(bpmSlider.value*2));
+    tick();
+    timer=setInterval(tick,60000/(document.getElementById("bpm").value*2));
   }else{
     playing=false;
-    clearInterval(intervalId);
-    timeEls.forEach(e=>e.classList.remove("active"));
-    arrowEls.forEach(e=>e.classList.remove("active"));
+    clearInterval(timer);
   }
+}
+
+function show(id){
+  document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+  document.getElementById(id).style.display="block";
+}
+
+function back(){
+  playing=false;
+  clearInterval(timer);
+  document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+  document.getElementById("menu").style.display="block";
+}
+
+document.getElementById("bpm").oninput=e=>{
+  document.getElementById("bpmVal").textContent=e.target.value;
+};
+
+document.getElementById("metroBtn").onclick=()=>{
+  metroOn=!metroOn;
+  metroBtn.textContent=metroOn?"Metrónomo: ON":"Metrónomo: OFF";
+  metroBtn.classList.toggle("active",metroOn);
 };
 </script>
 
