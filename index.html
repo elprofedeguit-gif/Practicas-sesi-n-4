@@ -18,8 +18,8 @@ body{
   text-align:center;
 }
 
-.logo{margin-top:20px;}
-.logo img{width:140px;opacity:.95;}
+.logo{margin-top:24px;}
+.logo img{width:150px;opacity:.95;}
 
 h1{margin:18px 0 4px;color:#22C55E;}
 h2{
@@ -30,8 +30,26 @@ h2{
   color:#a855f7;
 }
 
+.menu{
+  margin-top:40px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.menu-btn{
+  background:#111;
+  border:1.5px solid #22C55E;
+  border-radius:16px;
+  padding:18px 28px;
+  font-size:17px;
+  color:#fff;
+  cursor:pointer;
+  width:320px;
+}
+
 .exercise-title{
-  margin-top:22px;
+  margin-top:24px;
   font-size:20px;
   font-weight:600;
 }
@@ -65,18 +83,6 @@ h2{
   text-shadow:0 0 12px currentColor;
 }
 
-.menu-btn{
-  background:#111;
-  border:1.5px solid #22C55E;
-  border-radius:14px;
-  padding:16px 26px;
-  font-size:17px;
-  color:#fff;
-  cursor:pointer;
-  margin:14px 0;
-  width:280px;
-}
-
 .controls{margin-top:10px;}
 button{
   background:#22C55E;
@@ -88,16 +94,16 @@ button{
   margin:10px;
   cursor:pointer;
 }
-button:active{transform:scale(.96);}
+
 input[type=range]{width:300px;accent-color:#a855f7;}
 
 .section{display:none;}
 .section.active{display:block;}
 
 .info{
-  margin-top:28px;
+  margin-top:26px;
   font-size:14px;
-  opacity:.7;
+  opacity:.75;
   max-width:420px;
 }
 </style>
@@ -112,14 +118,15 @@ input[type=range]{width:300px;accent-color:#a855f7;}
 <h1>Prácticas guiadas – Sesión 4</h1>
 <h2>El motor ya está en marcha</h2>
 
-<!-- ===== MENÚ ===== -->
+<!-- MENÚ -->
 <div class="section active" id="menu">
-  <div class="exercise-title">Elegí un ejercicio</div>
-  <button class="menu-btn" onclick="openExercise('basic')">Rasgueo Inicial (Básico)</button>
-  <button class="menu-btn" onclick="openExercise('pop')">Rasgueo POP</button>
+  <div class="menu">
+    <button class="menu-btn" onclick="openExercise('basic')">▶ Rasgueo Inicial (Básico)</button>
+    <button class="menu-btn" onclick="openExercise('pop')">▶ Rasgueo Pop / Rock</button>
+  </div>
 </div>
 
-<!-- ===== EJERCICIO ===== -->
+<!-- EJERCICIO -->
 <div class="section" id="exercise">
   <div class="exercise-title" id="exerciseName"></div>
 
@@ -161,16 +168,16 @@ const BASIC = {
 };
 
 const POP = {
-  name:"Rasgueo POP",
-  info:"Las flechas apagadas son silencios. La mano se mueve, pero no se toca.",
+  name:"Rasgueo Pop / Rock",
+  info:"En las flechas apagadas las cuerdas quedan sonando. La mano se mueve, pero no toca las cuerdas.",
   pattern:[
     {l:"1",t:"down",play:true,strong:true},
     {l:"y",t:"up",play:false},
-    {l:"2",t:"down",play:true},
+    {l:"2",t:"down",play:true,soft:true},
     {l:"y",t:"up",play:true},
     {l:"3",t:"down",play:false},
     {l:"y",t:"up",play:true},
-    {l:"4",t:"down",play:true},
+    {l:"4",t:"down",play:true,soft:true},
     {l:"y",t:"up",play:true}
   ]
 };
@@ -178,12 +185,11 @@ const POP = {
 /* ===== VISUAL ===== */
 const timesEl=document.getElementById("times");
 const arrowsEl=document.getElementById("arrows");
-const timeEls=[], arrowEls=[];
+let timeEls=[], arrowEls=[];
 
 function buildVisual(){
   timesEl.innerHTML=""; arrowsEl.innerHTML="";
-  timeEls.length=0; arrowEls.length=0;
-
+  timeEls=[]; arrowEls=[];
   pattern.forEach(p=>{
     const t=document.createElement("div");
     t.className="time"; t.textContent=p.l;
@@ -224,10 +230,11 @@ function playStrum(buf,g){
 function tick(){
   const p=pattern[step];
   if(p.play){
-    playStrum(
-      p.t==="down"?downBuffer:upBuffer,
-      p.strong?0.9:(p.t==="down"?0.6:0.45)
-    );
+    let gain=0.6;
+    if(p.strong) gain=0.9;
+    if(p.soft) gain=0.55;
+    if(p.t==="up") gain=0.45;
+    playStrum(p.t==="down"?downBuffer:upBuffer,gain);
   }
   highlight(step);
   step=(step+1)%pattern.length;
@@ -261,7 +268,6 @@ function openExercise(type){
   playing=false; clearInterval(intervalId);
   document.getElementById("menu").classList.remove("active");
   document.getElementById("exercise").classList.add("active");
-
   const ex = type==="basic"?BASIC:POP;
   pattern = ex.pattern;
   document.getElementById("exerciseName").textContent = ex.name;
