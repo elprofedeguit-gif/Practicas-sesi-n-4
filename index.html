@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Prácticas guiadas – Sesión 4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
@@ -20,7 +21,7 @@ body{
 .logo{margin-top:20px;}
 .logo img{width:140px;opacity:.95;}
 
-h1{margin:18px 0 4px;color:#4ade80;}
+h1{margin:18px 0 4px;color:#22C55E;}
 h2{
   margin:0;
   font-style:italic;
@@ -29,7 +30,11 @@ h2{
   color:#a855f7;
 }
 
-.exercise{margin-top:22px;font-size:20px;}
+.exercise-title{
+  margin-top:22px;
+  font-size:20px;
+  font-weight:600;
+}
 
 .rows{margin:28px 0;}
 .row{
@@ -43,17 +48,16 @@ h2{
   width:40px;
   font-size:22px;
   opacity:.35;
-  transition:.1s;
 }
 .time.active{opacity:1;transform:scale(1.2);}
 
 .arrow{
   width:40px;
   font-size:32px;
-  opacity:.35;
+  opacity:.25;
   transition:.1s;
 }
-.arrow.down{color:#22c55e;}
+.arrow.down{color:#22C55E;}
 .arrow.up{color:#a855f7;}
 .arrow.active{
   opacity:1;
@@ -61,9 +65,21 @@ h2{
   text-shadow:0 0 12px currentColor;
 }
 
+.menu-btn{
+  background:#111;
+  border:1.5px solid #22C55E;
+  border-radius:14px;
+  padding:16px 26px;
+  font-size:17px;
+  color:#fff;
+  cursor:pointer;
+  margin:14px 0;
+  width:280px;
+}
+
 .controls{margin-top:10px;}
 button{
-  background:#22c55e;
+  background:#22C55E;
   color:#000;
   border:none;
   padding:14px 30px;
@@ -73,11 +89,13 @@ button{
   cursor:pointer;
 }
 button:active{transform:scale(.96);}
-
 input[type=range]{width:300px;accent-color:#a855f7;}
 
+.section{display:none;}
+.section.active{display:block;}
+
 .info{
-  margin-top:30px;
+  margin-top:28px;
   font-size:14px;
   opacity:.7;
   max-width:420px;
@@ -94,110 +112,132 @@ input[type=range]{width:300px;accent-color:#a855f7;}
 <h1>Prácticas guiadas – Sesión 4</h1>
 <h2>El motor ya está en marcha</h2>
 
-<div class="exercise"><strong>Rasgueo Inicial (Básico)</strong></div>
-
-<div class="rows">
-  <div class="row" id="times"></div>
-  <div class="row" id="arrows"></div>
+<!-- ===== MENÚ ===== -->
+<div class="section active" id="menu">
+  <div class="exercise-title">Elegí un ejercicio</div>
+  <button class="menu-btn" onclick="openExercise('basic')">Rasgueo Inicial (Básico)</button>
+  <button class="menu-btn" onclick="openExercise('pop')">Rasgueo POP</button>
 </div>
 
-<div class="controls">
-  <button id="play">Play / Stop</button><br><br>
-  <input type="range" id="bpm" min="30" max="70" value="40">
-  <div>BPM: <span id="bpmVal">40</span></div>
-</div>
+<!-- ===== EJERCICIO ===== -->
+<div class="section" id="exercise">
+  <div class="exercise-title" id="exerciseName"></div>
 
-<div class="info">
-Los sonidos no corresponden a ningún acorde.<br>
-Son cuerdas al aire como referencia rítmica.
+  <div class="rows">
+    <div class="row" id="times"></div>
+    <div class="row" id="arrows"></div>
+  </div>
+
+  <div class="controls">
+    <button id="play">Play / Stop</button><br><br>
+    <input type="range" id="bpm" min="30" max="70" value="40">
+    <div>BPM: <span id="bpmVal">40</span></div>
+  </div>
+
+  <div class="info" id="infoText"></div>
+
+  <button class="menu-btn" onclick="back()">Volver</button>
 </div>
 
 <script>
 let audioCtx, downBuffer, upBuffer;
-let playing=false;
-let step=0;
-let intervalId=null;
+let playing=false, step=0, intervalId=null;
+let pattern=[];
 
-const pattern=[
- {l:"1",t:"down",strong:true},
- {l:"y",t:"up"},
- {l:"2",t:"down"},
- {l:"y",t:"up"},
- {l:"3",t:"down"},
- {l:"y",t:"up"},
- {l:"4",t:"down"},
- {l:"y",t:"up"}
-];
+/* ===== PATRONES ===== */
+const BASIC = {
+  name:"Rasgueo Inicial (Básico)",
+  info:"↓ en el pulso, ↑ en el “y”.",
+  pattern:[
+    {l:"1",t:"down",play:true,strong:true},
+    {l:"y",t:"up",play:true},
+    {l:"2",t:"down",play:true},
+    {l:"y",t:"up",play:true},
+    {l:"3",t:"down",play:true},
+    {l:"y",t:"up",play:true},
+    {l:"4",t:"down",play:true},
+    {l:"y",t:"up",play:true}
+  ]
+};
 
-const GAIN_STRONG=0.9;
-const GAIN_DOWN=0.6;
-const GAIN_UP=0.45;
+const POP = {
+  name:"Rasgueo POP",
+  info:"Las flechas apagadas son silencios. La mano se mueve, pero no se toca.",
+  pattern:[
+    {l:"1",t:"down",play:true,strong:true},
+    {l:"y",t:"up",play:false},
+    {l:"2",t:"down",play:true},
+    {l:"y",t:"up",play:true},
+    {l:"3",t:"down",play:false},
+    {l:"y",t:"up",play:true},
+    {l:"4",t:"down",play:true},
+    {l:"y",t:"up",play:true}
+  ]
+};
 
-const times=document.getElementById("times");
-const arrows=document.getElementById("arrows");
+/* ===== VISUAL ===== */
+const timesEl=document.getElementById("times");
+const arrowsEl=document.getElementById("arrows");
+const timeEls=[], arrowEls=[];
 
-pattern.forEach(p=>{
-  const t=document.createElement("div");
-  t.className="time";
-  t.textContent=p.l;
-  times.appendChild(t);
+function buildVisual(){
+  timesEl.innerHTML=""; arrowsEl.innerHTML="";
+  timeEls.length=0; arrowEls.length=0;
 
-  const a=document.createElement("div");
-  a.className="arrow "+p.t;
-  a.textContent=p.t==="down"?"↓":"↑";
-  arrows.appendChild(a);
-});
+  pattern.forEach(p=>{
+    const t=document.createElement("div");
+    t.className="time"; t.textContent=p.l;
+    timesEl.appendChild(t); timeEls.push(t);
 
-const timeEls=document.querySelectorAll(".time");
-const arrowEls=document.querySelectorAll(".arrow");
+    const a=document.createElement("div");
+    a.className="arrow "+p.t;
+    a.textContent=p.t==="down"?"↓":"↑";
+    arrowsEl.appendChild(a); arrowEls.push(a);
+  });
+}
 
 function highlight(i){
   timeEls.forEach(e=>e.classList.remove("active"));
   arrowEls.forEach(e=>e.classList.remove("active"));
   timeEls[i].classList.add("active");
-  arrowEls[i].classList.add("active");
+  if(pattern[i].play) arrowEls[i].classList.add("active");
 }
 
+/* ===== AUDIO ===== */
 async function loadSample(u){
   const r=await fetch(u);
   return await audioCtx.decodeAudioData(await r.arrayBuffer());
 }
-
-function playStrum(buffer,gainValue){
-  const src=audioCtx.createBufferSource();
-  const g=audioCtx.createGain();
-  src.buffer=buffer;
-
+function playStrum(buf,g){
+  const s=audioCtx.createBufferSource();
+  const gn=audioCtx.createGain();
+  s.buffer=buf;
   const now=audioCtx.currentTime;
-  g.gain.setValueAtTime(0,now);
-  g.gain.linearRampToValueAtTime(gainValue,now+0.004);
-  g.gain.linearRampToValueAtTime(0,now+buffer.duration);
-
-  src.connect(g).connect(audioCtx.destination);
-  src.start(now);
+  gn.gain.setValueAtTime(0,now);
+  gn.gain.linearRampToValueAtTime(g,now+0.004);
+  gn.gain.linearRampToValueAtTime(0,now+buf.duration);
+  s.connect(gn).connect(audioCtx.destination);
+  s.start(now);
 }
 
+/* ===== MOTOR ===== */
 function tick(){
   const p=pattern[step];
-
-  const gain =
-    p.strong ? GAIN_STRONG :
-    p.t==="down" ? GAIN_DOWN : GAIN_UP;
-
-  playStrum(
-    p.t==="down" ? downBuffer : upBuffer,
-    gain
-  );
-
+  if(p.play){
+    playStrum(
+      p.t==="down"?downBuffer:upBuffer,
+      p.strong?0.9:(p.t==="down"?0.6:0.45)
+    );
+  }
   highlight(step);
-
-  step = (step + 1) % pattern.length;
+  step=(step+1)%pattern.length;
 }
 
+/* ===== CONTROLES ===== */
 const playBtn=document.getElementById("play");
-const bpmSlider=document.getElementById("bpm");
+const bpm=document.getElementById("bpm");
 const bpmVal=document.getElementById("bpmVal");
-bpmSlider.oninput=()=>bpmVal.textContent=bpmSlider.value;
+bpm.oninput=()=>bpmVal.textContent=bpm.value;
 
 playBtn.onclick=async()=>{
   if(!audioCtx){
@@ -205,24 +245,35 @@ playBtn.onclick=async()=>{
     downBuffer=await loadSample("down.wav");
     upBuffer=await loadSample("up.wav");
   }
-
   if(!playing){
-    playing=true;
-    step=0;
-
-    const bpm=+bpmSlider.value;
-    const interval=60000/(bpm*2);
-
-    tick(); // 🔥 PRIMER GOLPE SIEMPRE ↓ FUERTE
-    intervalId=setInterval(tick,interval);
-
+    playing=true; step=0;
+    tick();
+    intervalId=setInterval(tick,60000/(bpm.value*2));
   }else{
-    playing=false;
-    clearInterval(intervalId);
+    playing=false; clearInterval(intervalId);
     timeEls.forEach(e=>e.classList.remove("active"));
     arrowEls.forEach(e=>e.classList.remove("active"));
   }
 };
+
+/* ===== NAVEGACIÓN ===== */
+function openExercise(type){
+  playing=false; clearInterval(intervalId);
+  document.getElementById("menu").classList.remove("active");
+  document.getElementById("exercise").classList.add("active");
+
+  const ex = type==="basic"?BASIC:POP;
+  pattern = ex.pattern;
+  document.getElementById("exerciseName").textContent = ex.name;
+  document.getElementById("infoText").textContent = ex.info;
+  buildVisual();
+}
+
+function back(){
+  playing=false; clearInterval(intervalId);
+  document.getElementById("exercise").classList.remove("active");
+  document.getElementById("menu").classList.add("active");
+}
 </script>
 
 </body>
