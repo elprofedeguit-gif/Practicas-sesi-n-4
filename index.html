@@ -11,14 +11,12 @@
   --green:#22C55E;
   --violet:#C9A9FF;
 }
-
 body{
   margin:0;
   background:var(--bg);
   color:#fff;
   font-family:Arial,sans-serif;
 }
-
 .page{
   min-height:100vh;
   display:flex;
@@ -26,7 +24,6 @@ body{
   align-items:center;
   padding-top:60px;
 }
-
 .header{
   display:flex;
   flex-direction:column;
@@ -34,7 +31,6 @@ body{
   margin-bottom:26px;
 }
 .header img{ width:150px; margin-bottom:12px; }
-
 h1{ color:var(--green); margin:0; font-weight:600; }
 .subtitle{ color:var(--violet); font-style:italic; margin-top:6px; }
 
@@ -61,9 +57,8 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   margin-bottom:18px;
 }
 
-/* ===== GRILLA ===== */
+/* GRILLA */
 .rows{ margin:26px 0; }
-
 .row{
   display:flex;
   justify-content:space-between;
@@ -71,31 +66,27 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   max-width:90vw;
   margin:6px auto;
 }
-
 .time{
   width:40px;
   font-size:22px;
   opacity:.25;
 }
-
 .arrow{
   width:40px;
-  height:40px;              /* 🔒 ALTURA FIJA */
-  line-height:40px;         /* 🔒 RESERVA ESPACIO */
+  height:40px;
+  line-height:40px;
   font-size:32px;
-  opacity:.15;              /* visible pero “apagada” */
+  opacity:.15;
 }
-
 .arrow.down{ color:var(--green); }
 .arrow.up{ color:var(--violet); }
-
 .active{
   opacity:1;
   transform:scale(1.2);
   text-shadow:0 0 10px currentColor;
 }
 
-/* ===== CONTROLES ===== */
+/* CONTROLES */
 .controls{
   margin-top:20px;
   display:flex;
@@ -103,7 +94,6 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   align-items:center;
   gap:16px;
 }
-
 button.control{
   background:var(--green);
   color:#000;
@@ -113,7 +103,6 @@ button.control{
   border-radius:14px;
   cursor:pointer;
 }
-
 button.metro{
   background:#1e1e1e;
   color:#fff;
@@ -126,17 +115,10 @@ button.metro.active{
   background:var(--green);
   color:#000;
 }
-
 input[type=range]{
   width:300px;
   max-width:90vw;
   accent-color:var(--violet);
-}
-
-.info{
-  margin-top:26px;
-  font-size:13px;
-  opacity:.7;
 }
 </style>
 </head>
@@ -172,14 +154,8 @@ input[type=range]{
     </div>
 
     <button class="metro" id="metroBtn" onclick="toggleMetro()">Metrónomo</button>
-
     <button class="control" onclick="back()">Volver</button>
   </div>
-</div>
-
-<div class="info">
-Los sonidos no corresponden a ningún acorde.<br>
-Son cuerdas al aire usadas solo como referencia rítmica.
 </div>
 
 </div>
@@ -199,11 +175,16 @@ const BASIC=[
   {t:"down",g:0.6},{t:"up",g:0.5}
 ];
 
+// 🔒 POP ROCK CORRECTO — ARRANCA EN 1
 const POP=[
-  {t:"down",g:0.9},null,
-  {t:"down",g:0.6},{t:"up",g:0.5},
-  null,{t:"up",g:0.25},
-  {t:"down",g:0.6},{t:"up",g:0.5}
+  {t:"down",g:0.9}, // 1
+  null,
+  {t:"down",g:0.6}, // 2
+  {t:"up",g:0.5},
+  null,
+  {t:"up",g:0.25},
+  {t:"down",g:0.6}, // 4
+  {t:"up",g:0.5}
 ];
 
 function buildGrid(){
@@ -217,7 +198,7 @@ function buildGrid(){
 
     const a=document.createElement("div");
     a.className="arrow";
-    a.textContent="↓";       // placeholder invisible
+    a.textContent="↓";
     arrows.appendChild(a);
   });
 }
@@ -257,12 +238,19 @@ function play(buf,g){
   s.connect(gn).connect(ctx.destination);
   s.start();
 }
-function metro(accent){
+
+// 🔔 METRÓNOMO SOLO NEGRAS
+function metro(step){
   if(!metroOn) return;
+  if(GRID[step]==="y") return;
+
   const o=ctx.createOscillator();
   const g=ctx.createGain();
-  o.frequency.value=accent?1200:700;
-  g.gain.value=accent?0.25:0.15;
+
+  const isOne = GRID[step]==="1";
+  o.frequency.value = isOne ? 1400 : 800;
+  g.gain.value = isOne ? 0.35 : 0.2;
+
   o.connect(g).connect(ctx.destination);
   o.start();
   o.stop(ctx.currentTime+0.04);
@@ -272,7 +260,7 @@ function tick(){
   highlight(step);
   const p=currentMap[step];
   if(p) play(p.t==="down"?downBuf:upBuf,p.g);
-  metro(GRID[step]==="1");
+  metro(step);
   step=(step+1)%8;
 }
 
@@ -283,9 +271,9 @@ function togglePlay(){
     return;
   }
   initAudio();
-  step=0;                // 🔒 SIEMPRE ARRANCA EN 1
+  step=0;        // 🔒 SIEMPRE EN 1
   playing=true;
-  tick();                // 🔒 primer golpe inmediato
+  tick();        // 🔒 primer golpe ↓ fuerte
   const bpm=document.getElementById("bpm").value;
   timer=setInterval(tick,60000/bpm/2);
 }
