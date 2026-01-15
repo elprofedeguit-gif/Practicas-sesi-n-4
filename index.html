@@ -11,12 +11,14 @@
   --green:#22C55E;
   --violet:#C9A9FF;
 }
+
 body{
   margin:0;
   background:var(--bg);
   color:#fff;
   font-family:Arial,sans-serif;
 }
+
 .page{
   min-height:100vh;
   display:flex;
@@ -24,6 +26,7 @@ body{
   align-items:center;
   padding-top:60px;
 }
+
 .header{
   display:flex;
   flex-direction:column;
@@ -31,6 +34,7 @@ body{
   margin-bottom:26px;
 }
 .header img{ width:150px; margin-bottom:12px; }
+
 h1{ color:var(--green); margin:0; font-weight:600; }
 .subtitle{ color:var(--violet); font-style:italic; margin-top:6px; }
 
@@ -57,6 +61,7 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   margin-bottom:18px;
 }
 
+/* ===== GRILLA ===== */
 .rows{ margin:26px 0; }
 
 .row{
@@ -67,12 +72,19 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   margin:6px auto;
 }
 
-.time,.arrow{
+.time{
   width:40px;
+  font-size:22px;
   opacity:.25;
 }
-.time{ font-size:22px; }
-.arrow{ font-size:32px; }
+
+.arrow{
+  width:40px;
+  height:40px;              /* 🔒 ALTURA FIJA */
+  line-height:40px;         /* 🔒 RESERVA ESPACIO */
+  font-size:32px;
+  opacity:.15;              /* visible pero “apagada” */
+}
 
 .arrow.down{ color:var(--green); }
 .arrow.up{ color:var(--violet); }
@@ -83,13 +95,13 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   text-shadow:0 0 10px currentColor;
 }
 
-/* CONTROLES */
+/* ===== CONTROLES ===== */
 .controls{
   margin-top:20px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:16px; /* 🔥 separación real */
+  gap:16px;
 }
 
 button.control{
@@ -115,9 +127,6 @@ button.metro.active{
   color:#000;
 }
 
-.bpm{
-  margin-top:10px;
-}
 input[type=range]{
   width:300px;
   max-width:90vw;
@@ -157,7 +166,7 @@ input[type=range]{
   <div class="controls">
     <button class="control" onclick="togglePlay()">Play / Stop</button>
 
-    <div class="bpm">
+    <div>
       BPM: <strong><span id="bpmVal">80</span></strong><br>
       <input type="range" min="40" max="90" value="80" id="bpm">
     </div>
@@ -205,8 +214,10 @@ function buildGrid(){
     t.className="time";
     t.textContent=label;
     times.appendChild(t);
+
     const a=document.createElement("div");
     a.className="arrow";
+    a.textContent="↓";       // placeholder invisible
     arrows.appendChild(a);
   });
 }
@@ -214,13 +225,16 @@ function buildGrid(){
 function highlight(i){
   document.querySelectorAll(".time,.arrow").forEach(e=>{
     e.classList.remove("active","down","up");
-    if(e.classList.contains("arrow")) e.textContent="";
+    if(e.classList.contains("arrow")) e.style.opacity=".15";
   });
+
   document.querySelectorAll(".time")[i].classList.add("active");
+
   if(currentMap[i]){
     const a=document.querySelectorAll(".arrow")[i];
     a.textContent=currentMap[i].t==="down"?"↓":"↑";
     a.classList.add("active",currentMap[i].t);
+    a.style.opacity="1";
   }
 }
 
@@ -269,19 +283,18 @@ function togglePlay(){
     return;
   }
   initAudio();
-  step=0;
+  step=0;                // 🔒 SIEMPRE ARRANCA EN 1
   playing=true;
+  tick();                // 🔒 primer golpe inmediato
   const bpm=document.getElementById("bpm").value;
-  tick();
   timer=setInterval(tick,60000/bpm/2);
 }
 
 function openExercise(type){
   menu.style.display="none";
   exercise.style.display="block";
-  exerciseTitle.textContent = type==="basic"
-    ? "Rasgueo Inicial (Básico)"
-    : "Rasgueo POP / Rock";
+  exerciseTitle.textContent =
+    type==="basic" ? "Rasgueo Inicial (Básico)" : "Rasgueo POP / Rock";
   currentMap = type==="basic"?BASIC:POP;
   buildGrid();
 }
