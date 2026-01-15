@@ -31,7 +31,7 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  margin-bottom:26px;
+  margin-bottom:24px;
 }
 
 .header img{ width:150px; margin-bottom:12px; }
@@ -78,7 +78,7 @@ h1{ color:var(--green); margin:0; font-weight:600; }
 
 .time,.arrow{
   width:40px;
-  opacity:.35;
+  opacity:.25;
 }
 
 .time{ font-size:22px; }
@@ -112,7 +112,6 @@ button.metro{
   font-size:15px;
   border-radius:12px;
 }
-
 button.metro.active{
   background:var(--green);
   color:#000;
@@ -129,27 +128,19 @@ button.metro.active{
   <div class="subtitle">El motor ya está en marcha</div>
 </div>
 
-<!-- MENU -->
 <div class="container" id="menu">
-  <button class="menu-btn" onclick="openBasic()">▶ Rasgueo Inicial (Básico)</button>
-  <button class="menu-btn" onclick="openPop()">▶ Rasgueo POP / Rock</button>
+  <button class="menu-btn" onclick="openExercise('basic')">▶ Rasgueo Inicial (Básico)</button>
+  <button class="menu-btn" onclick="openExercise('pop')">▶ Rasgueo POP / Rock</button>
 </div>
 
-<!-- BASICO -->
-<div class="container section" id="basic">
-  <div class="exercise-title">Rasgueo Inicial (Básico)</div>
-  <div class="rows" id="rowsBasic"></div>
-  <button class="control" onclick="toggleBasic()">Play / Stop</button><br>
-  <button class="metro" onclick="toggleMetro(this)">Metrónomo</button><br>
-  <button class="control" onclick="back()">Volver</button>
-</div>
-
-<!-- POP -->
-<div class="container section" id="pop">
-  <div class="exercise-title">Rasgueo POP / Rock</div>
-  <div class="rows" id="rowsPop"></div>
-  <button class="control" onclick="togglePop()">Play / Stop</button><br>
-  <button class="metro" onclick="toggleMetro(this)">Metrónomo</button><br>
+<div class="container section" id="exercise">
+  <div class="exercise-title" id="exerciseTitle"></div>
+  <div class="rows">
+    <div class="row" id="times"></div>
+    <div class="row" id="arrows"></div>
+  </div>
+  <button class="control" onclick="togglePlay()">Play / Stop</button><br>
+  <button class="metro" id="metroBtn" onclick="toggleMetro()">Metrónomo</button><br>
   <button class="control" onclick="back()">Volver</button>
 </div>
 
@@ -157,10 +148,51 @@ button.metro.active{
 
 <script>
 let ctx, downBuf, upBuf;
+let timer=null, step=0, playing=false;
 let metroOn=false;
-let basicTimer, popTimer;
+let currentMap=[];
 
-/* ===== AUDIO ===== */
+const GRID = ["1","y","2","y","3","y","4","y"];
+
+/* MAPAS DE RASGUEO */
+const BASIC = [
+  {t:"down",g:0.9},{t:"up",g:0.5},
+  {t:"down",g:0.6},{t:"up",g:0.5},
+  {t:"down",g:0.6},{t:"up",g:0.5},
+  {t:"down",g:0.6},{t:"up",g:0.5}
+];
+
+const POP = [
+  {t:"down",g:0.9}, null,
+  {t:"down",g:0.6},{t:"up",g:0.5},
+  null,{t:"up",g:0.25},
+  {t:"down",g:0.6},{t:"up",g:0.5}
+];
+
+function buildGrid(){
+  times.innerHTML="";
+  arrows.innerHTML="";
+  GRID.forEach(()=>{
+    const t=document.createElement("div");
+    t.className="time";
+    times.appendChild(t);
+    const a=document.createElement("div");
+    a.className="arrow";
+    arrows.appendChild(a);
+  });
+}
+
+function highlight(i){
+  document.querySelectorAll(".time,.arrow").forEach(e=>e.classList.remove("active"));
+  document.querySelectorAll(".time")[i].classList.add("active");
+  if(currentMap[i]){
+    const a=document.querySelectorAll(".arrow")[i];
+    a.classList.add("active");
+    a.textContent=currentMap[i].t==="down"?"↓":"↑";
+    a.classList.add(currentMap[i].t);
+  }
+}
+
 async function initAudio(){
   if(!ctx){
     ctx=new AudioContext();
@@ -174,10 +206,10 @@ async function load(url){
 }
 function play(buf,g){
   const s=ctx.createBufferSource();
-  const gNode=ctx.createGain();
-  gNode.gain.value=g;
+  const gn=ctx.createGain();
+  gn.gain.value=g;
   s.buffer=buf;
-  s.connect(gNode).connect(ctx.destination);
+  s.connect(gn).connect(ctx.destination);
   s.start();
 }
 function metro(accent){
@@ -191,100 +223,49 @@ function metro(accent){
   o.stop(ctx.currentTime+0.04);
 }
 
-/* ===== BASIC ===== */
-const BASIC=[
- {l:"1",t:"down",g:0.9},
- {l:"y",t:"up",g:0.5},
- {l:"2",t:"down",g:0.6},
- {l:"y",t:"up",g:0.5},
- {l:"3",t:"down",g:0.6},
- {l:"y",t:"up",g:0.5},
- {l:"4",t:"down",g:0.6},
- {l:"y",t:"up",g:0.5}
-];
-
-let bStep=0;
-function toggleBasic(){
-  if(basicTimer){ clearInterval(basicTimer); basicTimer=null; return; }
-  initAudio();
-  bStep=0;
-  basicTimer=setInterval(()=>{
-    const p=BASIC[bStep];
+function tick(){
+  const p=currentMap[step];
+  highlight(step);
+  if(p){
     play(p.t==="down"?downBuf:upBuf,p.g);
-    metro(p.l==="1");
-    highlight("rowsBasic",bStep);
-    bStep=(bStep+1)%BASIC.length;
-  },600);
+  }
+  metro(GRID[step]==="1");
+  step=(step+1)%8;
 }
 
-/* ===== POP ROCK (RESTAURADO) ===== */
-const POP=[
- {l:"1",t:"down",g:0.9},
- {l:"2",t:"down",g:0.6},
- {l:"y",t:"up",g:0.5},
- {l:"3",t:"up",g:0.25},
- {l:"4",t:"down",g:0.6},
- {l:"y",t:"up",g:0.5}
-];
-
-let pStep=0;
-function togglePop(){
-  if(popTimer){ clearInterval(popTimer); popTimer=null; return; }
+function togglePlay(){
+  if(playing){
+    clearInterval(timer);
+    playing=false;
+    return;
+  }
   initAudio();
-  pStep=0;
-  popTimer=setInterval(()=>{
-    const p=POP[pStep];
-    play(p.t==="down"?downBuf:upBuf,p.g);
-    metro(p.l==="1");
-    highlight("rowsPop",pStep);
-    pStep=(pStep+1)%POP.length;
-  },600);
+  step=0;
+  playing=true;
+  tick();
+  timer=setInterval(tick,60000/80);
 }
 
-/* ===== UI ===== */
-function build(id,pattern){
-  const el=document.getElementById(id);
-  el.innerHTML="";
-  const r1=document.createElement("div");
-  r1.className="row";
-  const r2=document.createElement("div");
-  r2.className="row";
-  pattern.forEach(p=>{
-    const t=document.createElement("div");
-    t.className="time"; t.textContent=p.l;
-    const a=document.createElement("div");
-    a.className="arrow "+p.t; a.textContent=p.t==="down"?"↓":"↑";
-    r1.appendChild(t); r2.appendChild(a);
-  });
-  el.appendChild(r1); el.appendChild(r2);
-}
-build("rowsBasic",BASIC);
-build("rowsPop",POP);
-
-function highlight(id,i){
-  document.querySelectorAll(`#${id} .time, #${id} .arrow`)
-    .forEach(e=>e.classList.remove("active"));
-  document.querySelectorAll(`#${id} .time`)[i]?.classList.add("active");
-  document.querySelectorAll(`#${id} .arrow`)[i]?.classList.add("active");
+function openExercise(type){
+  menu.style.display="none";
+  exercise.style.display="block";
+  exerciseTitle.textContent = type==="basic"
+    ? "Rasgueo Inicial (Básico)"
+    : "Rasgueo POP / Rock";
+  currentMap = type==="basic"?BASIC:POP;
+  buildGrid();
 }
 
-function openBasic(){
-  document.getElementById("menu").style.display="none";
-  document.getElementById("basic").style.display="block";
-}
-function openPop(){
-  document.getElementById("menu").style.display="none";
-  document.getElementById("pop").style.display="block";
-}
 function back(){
-  clearInterval(basicTimer); basicTimer=null;
-  clearInterval(popTimer); popTimer=null;
-  document.querySelectorAll(".section").forEach(s=>s.style.display="none");
-  document.getElementById("menu").style.display="block";
+  clearInterval(timer);
+  playing=false;
+  exercise.style.display="none";
+  menu.style.display="block";
 }
-function toggleMetro(btn){
+
+function toggleMetro(){
   metroOn=!metroOn;
-  btn.classList.toggle("active",metroOn);
+  metroBtn.classList.toggle("active",metroOn);
 }
 </script>
 
