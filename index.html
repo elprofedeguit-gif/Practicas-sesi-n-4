@@ -57,7 +57,7 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   margin-bottom:18px;
 }
 
-/* GRILLA */
+/* ===== GRILLA ===== */
 .rows{ margin:26px 0; }
 .row{
   display:flex;
@@ -86,7 +86,7 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   text-shadow:0 0 10px currentColor;
 }
 
-/* CONTROLES */
+/* ===== CONTROLES ===== */
 .controls{
   margin-top:20px;
   display:flex;
@@ -102,6 +102,18 @@ button.control{
   font-size:17px;
   border-radius:14px;
   cursor:pointer;
+}
+button.metro{
+  background:#1e1e1e;
+  color:#fff;
+  border:1.5px solid var(--green);
+  padding:12px 30px;
+  font-size:15px;
+  border-radius:12px;
+}
+button.metro.active{
+  background:var(--green);
+  color:#000;
 }
 input[type=range]{
   width:300px;
@@ -143,6 +155,8 @@ input[type=range]{
       <input type="range" min="40" max="90" value="80" id="bpm">
     </div>
 
+    <button class="metro" id="metroBtn" onclick="toggleMetro()">Metrónomo</button>
+
     <button class="control" onclick="back()">Volver</button>
   </div>
 </div>
@@ -152,6 +166,7 @@ input[type=range]{
 <script>
 let ctx=null, downBuf, upBuf;
 let timer=null, step=0, playing=false;
+let metroOn=false;
 let currentMap=[];
 
 const GRID=["1","y","2","y","3","y","4","y"];
@@ -181,7 +196,7 @@ function buildGrid(){
 
     const a=document.createElement("div");
     a.className="arrow";
-    a.textContent="↓";
+    a.textContent="↓"; // placeholder invisible
     arrows.appendChild(a);
   });
 }
@@ -225,10 +240,28 @@ function play(buf,g){
   s.start();
 }
 
+/* 🔔 METRÓNOMO — SOLO NEGRAS */
+function playMetro(step){
+  if(!metroOn) return;
+  if(GRID[step]==="y") return;
+
+  const o=ctx.createOscillator();
+  const g=ctx.createGain();
+
+  const isOne = GRID[step]==="1";
+  o.frequency.value = isOne ? 1400 : 800;
+  g.gain.value = isOne ? 0.35 : 0.2;
+
+  o.connect(g).connect(ctx.destination);
+  o.start();
+  o.stop(ctx.currentTime+0.04);
+}
+
 function tick(){
   renderStep(step);
   const p=currentMap[step];
   if(p) play(p.t==="down"?downBuf:upBuf,p.g);
+  playMetro(step);
   step=(step+1)%8;
 }
 
@@ -244,8 +277,12 @@ async function togglePlay(){
   step=0;
   playing=true;
 
+  // 🔥 primer golpe garantizado
   renderStep(0);
-  play(downBuf, currentMap[0].g); // 🔥 primer golpe garantizado
+  if(currentMap[0]){
+    play(downBuf,currentMap[0].g);
+  }
+  playMetro(0);
 
   step=1;
 
@@ -267,6 +304,11 @@ function back(){
   playing=false;
   exercise.style.display="none";
   menu.style.display="block";
+}
+
+function toggleMetro(){
+  metroOn=!metroOn;
+  metroBtn.classList.toggle("active",metroOn);
 }
 
 bpm.oninput=()=>bpmVal.textContent=bpm.value;
