@@ -11,12 +11,14 @@
   --green:#22C55E;
   --violet:#C9A9FF;
 }
+
 body{
   margin:0;
   background:var(--bg);
   color:#fff;
   font-family:Arial,sans-serif;
 }
+
 .page{
   min-height:100vh;
   display:flex;
@@ -24,6 +26,7 @@ body{
   align-items:center;
   padding-top:60px;
 }
+
 .header{
   display:flex;
   flex-direction:column;
@@ -31,10 +34,15 @@ body{
   margin-bottom:26px;
 }
 .header img{ width:150px; margin-bottom:12px; }
+
 h1{ color:var(--green); margin:0; font-weight:600; }
 .subtitle{ color:var(--violet); font-style:italic; margin-top:6px; }
 
-.container{ width:100%; max-width:520px; text-align:center; }
+.container{
+  width:100%;
+  max-width:520px;
+  text-align:center;
+}
 
 .menu-btn{
   width:100%;
@@ -59,6 +67,7 @@ h1{ color:var(--green); margin:0; font-weight:600; }
 
 /* GRILLA */
 .rows{ margin:26px 0; }
+
 .row{
   display:flex;
   justify-content:space-between;
@@ -66,11 +75,13 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   max-width:90vw;
   margin:6px auto;
 }
+
 .time{
   width:40px;
   font-size:22px;
   opacity:.25;
 }
+
 .arrow{
   width:40px;
   height:40px;
@@ -78,8 +89,10 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   font-size:32px;
   opacity:.15;
 }
+
 .arrow.down{ color:var(--green); }
 .arrow.up{ color:var(--violet); }
+
 .active{
   opacity:1;
   transform:scale(1.2);
@@ -92,8 +105,9 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:16px;
+  gap:18px;
 }
+
 button.control{
   background:var(--green);
   color:#000;
@@ -103,6 +117,7 @@ button.control{
   border-radius:14px;
   cursor:pointer;
 }
+
 button.metro{
   background:#1e1e1e;
   color:#fff;
@@ -115,10 +130,17 @@ button.metro.active{
   background:var(--green);
   color:#000;
 }
+
 input[type=range]{
   width:300px;
   max-width:90vw;
   accent-color:var(--violet);
+}
+
+.info{
+  margin-top:26px;
+  font-size:13px;
+  opacity:.7;
 }
 </style>
 </head>
@@ -158,6 +180,11 @@ input[type=range]{
   </div>
 </div>
 
+<div class="info">
+Los sonidos no corresponden a ningún acorde.<br>
+Son cuerdas al aire usadas solo como referencia rítmica.
+</div>
+
 </div>
 
 <script>
@@ -166,24 +193,25 @@ let timer=null, step=0, playing=false;
 let metroOn=false;
 let currentMap=[];
 
-const GRID=["1","y","2","y","3","y","4","y"];
+const GRID = ["1","y","2","y","3","y","4","y"];
 
-const BASIC=[
+/* MAPAS */
+const BASIC = [
   {t:"down",g:0.9},{t:"up",g:0.5},
   {t:"down",g:0.6},{t:"up",g:0.5},
   {t:"down",g:0.6},{t:"up",g:0.5},
   {t:"down",g:0.6},{t:"up",g:0.5}
 ];
 
-// 🔒 POP ROCK CORRECTO — ARRANCA EN 1
-const POP=[
-  {t:"down",g:0.9}, // 1
+// POP ROCK — ARRANCA EN 1 ↓
+const POP = [
+  {t:"down",g:0.9}, // 1 ↓ FUERTE
   null,
-  {t:"down",g:0.6}, // 2
+  {t:"down",g:0.6}, // 2 ↓
   {t:"up",g:0.5},
   null,
   {t:"up",g:0.25},
-  {t:"down",g:0.6}, // 4
+  {t:"down",g:0.6}, // 4 ↓
   {t:"up",g:0.5}
 ];
 
@@ -198,7 +226,7 @@ function buildGrid(){
 
     const a=document.createElement("div");
     a.className="arrow";
-    a.textContent="↓";
+    a.textContent="↓"; // placeholder invisible
     arrows.appendChild(a);
   });
 }
@@ -213,69 +241,72 @@ function highlight(i){
 
   if(currentMap[i]){
     const a=document.querySelectorAll(".arrow")[i];
-    a.textContent=currentMap[i].t==="down"?"↓":"↑";
-    a.classList.add("active",currentMap[i].t);
+    a.textContent = currentMap[i].t==="down" ? "↓" : "↑";
+    a.classList.add("active", currentMap[i].t);
     a.style.opacity="1";
   }
 }
 
 async function initAudio(){
   if(!ctx){
-    ctx=new AudioContext();
-    downBuf=await load("down.wav");
-    upBuf=await load("up.wav");
+    ctx = new AudioContext();
+    downBuf = await load("down.wav");
+    upBuf   = await load("up.wav");
   }
 }
 async function load(url){
-  const r=await fetch(url);
+  const r = await fetch(url);
   return await ctx.decodeAudioData(await r.arrayBuffer());
 }
 function play(buf,g){
-  const s=ctx.createBufferSource();
-  const gn=ctx.createGain();
-  gn.gain.value=g;
-  s.buffer=buf;
+  const s = ctx.createBufferSource();
+  const gn = ctx.createGain();
+  gn.gain.value = g;
+  s.buffer = buf;
   s.connect(gn).connect(ctx.destination);
   s.start();
 }
 
-// 🔔 METRÓNOMO SOLO NEGRAS
+/* METRÓNOMO SOLO NEGRAS */
 function metro(step){
   if(!metroOn) return;
-  if(GRID[step]==="y") return;
+  if(GRID[step] === "y") return;
 
-  const o=ctx.createOscillator();
-  const g=ctx.createGain();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  const isOne = GRID[step] === "1";
 
-  const isOne = GRID[step]==="1";
   o.frequency.value = isOne ? 1400 : 800;
   g.gain.value = isOne ? 0.35 : 0.2;
 
   o.connect(g).connect(ctx.destination);
   o.start();
-  o.stop(ctx.currentTime+0.04);
+  o.stop(ctx.currentTime + 0.04);
 }
 
 function tick(){
   highlight(step);
-  const p=currentMap[step];
-  if(p) play(p.t==="down"?downBuf:upBuf,p.g);
+  const p = currentMap[step];
+  if(p) play(p.t==="down"?downBuf:upBuf, p.g);
   metro(step);
-  step=(step+1)%8;
+  step = (step + 1) % 8;
 }
 
 function togglePlay(){
   if(playing){
     clearInterval(timer);
-    playing=false;
+    playing = false;
     return;
   }
+
   initAudio();
-  step=0;        // 🔒 SIEMPRE EN 1
-  playing=true;
-  tick();        // 🔒 primer golpe ↓ fuerte
-  const bpm=document.getElementById("bpm").value;
-  timer=setInterval(tick,60000/bpm/2);
+
+  step = 0;          // 🔒 SIEMPRE TIEMPO 1
+  playing = true;
+  tick();            // 🔒 PRIMER GOLPE ↓ FUERTE
+
+  const bpm = document.getElementById("bpm").value;
+  timer = setInterval(tick, 60000 / bpm / 2);
 }
 
 function openExercise(type){
@@ -283,23 +314,23 @@ function openExercise(type){
   exercise.style.display="block";
   exerciseTitle.textContent =
     type==="basic" ? "Rasgueo Inicial (Básico)" : "Rasgueo POP / Rock";
-  currentMap = type==="basic"?BASIC:POP;
+  currentMap = type==="basic" ? BASIC : POP;
   buildGrid();
 }
 
 function back(){
   clearInterval(timer);
-  playing=false;
+  playing = false;
   exercise.style.display="none";
   menu.style.display="block";
 }
 
 function toggleMetro(){
-  metroOn=!metroOn;
-  metroBtn.classList.toggle("active",metroOn);
+  metroOn = !metroOn;
+  metroBtn.classList.toggle("active", metroOn);
 }
 
-bpm.oninput=()=>bpmVal.textContent=bpm.value;
+bpm.oninput = () => bpmVal.textContent = bpm.value;
 </script>
 
 </body>
