@@ -16,7 +16,6 @@ body{
   background:var(--bg);
   color:#fff;
   font-family:Arial,sans-serif;
-  font-family:Arial,sans-serif;
 }
 .page{
   min-height:100vh;
@@ -104,18 +103,6 @@ button.control{
   border-radius:14px;
   cursor:pointer;
 }
-button.metro{
-  background:#1e1e1e;
-  color:#fff;
-  border:1.5px solid var(--green);
-  padding:12px 30px;
-  font-size:15px;
-  border-radius:12px;
-}
-button.metro.active{
-  background:var(--green);
-  color:#000;
-}
 input[type=range]{
   width:300px;
   max-width:90vw;
@@ -134,12 +121,11 @@ input[type=range]{
 </div>
 
 <div class="container" id="menu">
-  <button class="menu-btn" onclick="openExercise('basic')">▶ Rasgueo Inicial (Básico)</button>
-  <button class="menu-btn" onclick="openExercise('pop')">▶ Rasgueo POP / Rock</button>
+  <button class="menu-btn" onclick="openExercise()">▶ Rasgueo POP / Rock</button>
 </div>
 
 <div class="container section" id="exercise">
-  <div class="exercise-title" id="exerciseTitle"></div>
+  <div class="exercise-title">Rasgueo POP / Rock</div>
 
   <div class="rows">
     <div class="row" id="times"></div>
@@ -154,7 +140,6 @@ input[type=range]{
       <input type="range" min="40" max="90" value="80" id="bpm">
     </div>
 
-    <button class="metro" id="metroBtn" onclick="toggleMetro()">Metrónomo</button>
     <button class="control" onclick="back()">Volver</button>
   </div>
 </div>
@@ -162,10 +147,8 @@ input[type=range]{
 </div>
 
 <script>
-let ctx, downBuf, upBuf;
+let ctx=null, downBuf, upBuf;
 let timer=null, step=0, playing=false;
-let metroOn=false;
-let currentMap=[];
 
 const GRID=["1","y","2","y","3","y","4","y"];
 
@@ -198,25 +181,31 @@ function renderStep(i){
     if(e.classList.contains("arrow")) e.style.opacity=".15";
   });
   document.querySelectorAll(".time")[i].classList.add("active");
-  if(currentMap[i]){
+
+  if(POP[i]){
     const a=document.querySelectorAll(".arrow")[i];
-    a.textContent=currentMap[i].t==="down"?"↓":"↑";
-    a.classList.add("active",currentMap[i].t);
+    a.textContent = POP[i].t==="down"?"↓":"↑";
+    a.classList.add("active",POP[i].t);
     a.style.opacity="1";
   }
 }
 
 async function initAudio(){
   if(!ctx){
-    ctx=new AudioContext();
-    downBuf=await load("down.wav");
-    upBuf=await load("up.wav");
+    ctx = new AudioContext();
+    downBuf = await load("down.wav");
+    upBuf   = await load("up.wav");
+  }
+  if(ctx.state === "suspended"){
+    await ctx.resume();   // 🔥 FIX REAL
   }
 }
+
 async function load(url){
   const r=await fetch(url);
   return await ctx.decodeAudioData(await r.arrayBuffer());
 }
+
 function play(buf,g){
   const s=ctx.createBufferSource();
   const gn=ctx.createGain();
@@ -226,49 +215,37 @@ function play(buf,g){
   s.start();
 }
 
-/* 🔥 GOLPE INICIAL EXPLÍCITO */
-function playFirstHit(){
-  const p=currentMap[0];
-  if(p){
-    play(p.t==="down"?downBuf:upBuf,p.g);
-  }
-}
-
 function tick(){
   renderStep(step);
-  const p=currentMap[step];
-  if(p){
-    play(p.t==="down"?downBuf:upBuf,p.g);
-  }
+  const p=POP[step];
+  if(p) play(p.t==="down"?downBuf:upBuf,p.g);
   step=(step+1)%8;
 }
 
-function togglePlay(){
+async function togglePlay(){
   if(playing){
     clearInterval(timer);
     playing=false;
     return;
   }
 
-  initAudio();
+  await initAudio();   // 🔥 asegura audio activo
 
   step=0;
   playing=true;
 
-  renderStep(0);   // visual tiempo 1
-  playFirstHit();  // 🔥 audio tiempo 1 GARANTIZADO
+  renderStep(0);
+  play(downBuf,0.9);   // 🔥 primer golpe REAL
 
-  step=1;          // avanzar manualmente
+  step=1;
 
   const bpm=document.getElementById("bpm").value;
   timer=setInterval(tick,60000/bpm/2);
 }
 
-function openExercise(type){
+function openExercise(){
   menu.style.display="none";
   exercise.style.display="block";
-  exerciseTitle.textContent="Rasgueo POP / Rock";
-  currentMap=POP;
   buildGrid();
 }
 
@@ -277,11 +254,6 @@ function back(){
   playing=false;
   exercise.style.display="none";
   menu.style.display="block";
-}
-
-function toggleMetro(){
-  metroOn=!metroOn;
-  metroBtn.classList.toggle("active",metroOn);
 }
 
 bpm.oninput=()=>bpmVal.textContent=bpm.value;
