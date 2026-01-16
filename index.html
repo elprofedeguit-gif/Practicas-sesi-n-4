@@ -11,12 +11,14 @@
   --green:#22C55E;
   --violet:#C9A9FF;
 }
+
 body{
   margin:0;
   background:var(--bg);
   color:#fff;
   font-family:Arial,sans-serif;
 }
+
 .page{
   min-height:100vh;
   display:flex;
@@ -24,17 +26,44 @@ body{
   align-items:center;
   padding-top:60px;
 }
+
+/* ================= HEADER ================= */
 .header{
   display:flex;
   flex-direction:column;
   align-items:center;
   margin-bottom:26px;
 }
-.header img{ width:150px; margin-bottom:12px; }
-h1{ color:var(--green); margin:0; font-weight:600; }
-.subtitle{ color:var(--violet); font-style:italic; margin-top:6px; }
+.header img{
+  width:150px;
+  margin-bottom:12px;
+}
+h1{
+  color:var(--green);
+  margin:0;
+  font-weight:600;
+}
+.subtitle{
+  color:var(--violet);
+  font-style:italic;
+  margin-top:6px;
+}
 
-.container{ width:100%; max-width:520px; text-align:center; }
+/* ================= CONTAINER ================= */
+.container{
+  width:100%;
+  max-width:520px;
+  text-align:center;
+}
+
+/* ================= BOTONES ================= */
+button{
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+button:active{
+  transform: scale(0.96) translateY(1px);
+}
 
 .menu-btn{
   width:100%;
@@ -49,51 +78,6 @@ h1{ color:var(--green); margin:0; font-weight:600; }
   cursor:pointer;
 }
 
-.section{ display:none; }
-
-.exercise-title{
-  font-size:20px;
-  font-weight:600;
-  margin-bottom:18px;
-}
-
-/* ===== GRILLA ===== */
-.rows{ margin:26px 0; }
-.row{
-  display:flex;
-  justify-content:space-between;
-  width:420px;
-  max-width:90vw;
-  margin:6px auto;
-}
-.time{
-  width:40px;
-  font-size:22px;
-  opacity:.25;
-}
-.arrow{
-  width:40px;
-  height:40px;
-  line-height:40px;
-  font-size:32px;
-  opacity:.15;
-}
-.arrow.down{ color:var(--green); }
-.arrow.up{ color:var(--violet); }
-.active{
-  opacity:1;
-  transform:scale(1.2);
-  text-shadow:0 0 10px currentColor;
-}
-
-/* ===== CONTROLES ===== */
-.controls{
-  margin-top:20px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:18px;
-}
 button.control{
   background:var(--green);
   color:#000;
@@ -103,6 +87,7 @@ button.control{
   border-radius:14px;
   cursor:pointer;
 }
+
 button.metro{
   background:#1e1e1e;
   color:#fff;
@@ -111,10 +96,68 @@ button.metro{
   font-size:15px;
   border-radius:12px;
 }
+
 button.metro.active{
   background:var(--green);
   color:#000;
 }
+
+.section{
+  display:none;
+}
+
+/* ================= TITULO EJERCICIO ================= */
+.exercise-title{
+  font-size:20px;
+  font-weight:600;
+  margin-bottom:18px;
+}
+
+/* ================= GRILLA ================= */
+.rows{
+  margin:26px 0;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  width:420px;
+  max-width:90vw;
+  margin:6px auto;
+}
+
+.time{
+  width:40px;
+  font-size:22px;
+  opacity:.25;
+}
+
+.arrow{
+  width:40px;
+  height:40px;
+  line-height:40px;
+  font-size:32px;
+  opacity:.15;
+}
+
+.arrow.down{ color:var(--green); }
+.arrow.up{ color:var(--violet); }
+
+.active{
+  opacity:1;
+  transform:scale(1.2);
+  text-shadow:0 0 10px currentColor;
+}
+
+/* ================= CONTROLES ================= */
+.controls{
+  margin-top:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
 input[type=range]{
   width:300px;
   max-width:90vw;
@@ -126,19 +169,20 @@ input[type=range]{
 <body>
 <div class="page">
 
+<!-- ================= HEADER ================= -->
 <div class="header">
   <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png">
   <h1>Zona de Práctica – Sesión 4 ⭐</h1>
   <div class="subtitle">El motor ya está en marcha</div>
 </div>
 
-<!-- MENÚ -->
+<!-- ================= MENU ================= -->
 <div class="container" id="menu">
   <button class="menu-btn" onclick="openExercise('basic')">▶ Rasgueo Inicial (Básico)</button>
   <button class="menu-btn" onclick="openExercise('pop')">▶ Rasgueo POP / Rock</button>
 </div>
 
-<!-- EJERCICIO -->
+<!-- ================= EJERCICIO ================= -->
 <div class="container section" id="exercise">
   <div class="exercise-title" id="exerciseTitle"></div>
 
@@ -171,6 +215,7 @@ let currentMap=[];
 
 const GRID=["1","y","2","y","3","y","4","y"];
 
+/* ===== MAPAS ===== */
 const BASIC=[
   {t:"down",g:0.9},{t:"up",g:0.5},
   {t:"down",g:0.6},{t:"up",g:0.5},
@@ -185,6 +230,7 @@ const POP=[
   {t:"down",g:0.6},{t:"up",g:0.5}
 ];
 
+/* ===== UI ===== */
 function buildGrid(){
   times.innerHTML="";
   arrows.innerHTML="";
@@ -196,7 +242,7 @@ function buildGrid(){
 
     const a=document.createElement("div");
     a.className="arrow";
-    a.textContent="↓"; // placeholder invisible
+    a.textContent="↓";
     arrows.appendChild(a);
   });
 }
@@ -217,6 +263,7 @@ function renderStep(i){
   }
 }
 
+/* ===== AUDIO ===== */
 async function initAudio(){
   if(!ctx){
     ctx=new AudioContext();
@@ -224,13 +271,15 @@ async function initAudio(){
     upBuf=await load("up.wav");
   }
   if(ctx.state==="suspended"){
-    await ctx.resume(); // 🔥 FIX primer play
+    await ctx.resume();
   }
 }
+
 async function load(url){
   const r=await fetch(url);
   return await ctx.decodeAudioData(await r.arrayBuffer());
 }
+
 function play(buf,g){
   const s=ctx.createBufferSource();
   const gn=ctx.createGain();
@@ -240,15 +289,15 @@ function play(buf,g){
   s.start();
 }
 
-/* 🔔 METRÓNOMO — SOLO NEGRAS */
+/* ===== METRÓNOMO ===== */
 function playMetro(step){
   if(!metroOn) return;
   if(GRID[step]==="y") return;
 
   const o=ctx.createOscillator();
   const g=ctx.createGain();
-
   const isOne = GRID[step]==="1";
+
   o.frequency.value = isOne ? 1400 : 800;
   g.gain.value = isOne ? 0.35 : 0.2;
 
@@ -257,6 +306,7 @@ function playMetro(step){
   o.stop(ctx.currentTime+0.04);
 }
 
+/* ===== LOOP ===== */
 function tick(){
   renderStep(step);
   const p=currentMap[step];
@@ -277,11 +327,8 @@ async function togglePlay(){
   step=0;
   playing=true;
 
-  // 🔥 primer golpe garantizado
   renderStep(0);
-  if(currentMap[0]){
-    play(downBuf,currentMap[0].g);
-  }
+  play(downBuf,currentMap[0].g);
   playMetro(0);
 
   step=1;
@@ -290,6 +337,7 @@ async function togglePlay(){
   timer=setInterval(tick,60000/bpm/2);
 }
 
+/* ===== NAVEGACIÓN ===== */
 function openExercise(type){
   menu.style.display="none";
   exercise.style.display="block";
