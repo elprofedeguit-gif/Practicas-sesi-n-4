@@ -58,7 +58,7 @@ h1{
 
 /* ===== BOTONES ===== */
 button{
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  transition: transform 0.08s ease;
 }
 button:active{
   transform: scale(0.96) translateY(1px);
@@ -196,7 +196,7 @@ input[type=range]{
 </div>
 
 <script>
-let ctx=null, downBuf, upBuf;
+let ctx=null, downBuf, upBuf, masterGain;
 let timer=null, step=0, playing=false;
 let metroOn=false;
 let currentMap=[];
@@ -251,12 +251,17 @@ function renderStep(i){
   }
 }
 
-/* ===== AUDIO ===== */
+/* ===== AUDIO (COMPATIBLE OPERA) ===== */
 async function initAudio(){
   if(!ctx){
-    ctx=new AudioContext();
-    downBuf=await load("down.wav");
-    upBuf=await load("up.wav");
+    ctx = new AudioContext();
+
+    masterGain = ctx.createGain();
+    masterGain.gain.value = 0.9;
+    masterGain.connect(ctx.destination);
+
+    downBuf = await load("down.wav");
+    upBuf   = await load("up.wav");
   }
   if(ctx.state==="suspended"){
     await ctx.resume();
@@ -264,45 +269,46 @@ async function initAudio(){
 }
 
 async function load(url){
-  const r=await fetch(url);
+  const r = await fetch(url);
   return await ctx.decodeAudioData(await r.arrayBuffer());
 }
 
-function play(buf,g){
-  const s=ctx.createBufferSource();
-  const gn=ctx.createGain();
-  gn.gain.value=g;
-  s.buffer=buf;
-  s.connect(gn).connect(ctx.destination);
+function play(buf, gain){
+  const s = ctx.createBufferSource();
+  const g = ctx.createGain();
+  g.gain.value = gain;
+
+  s.buffer = buf;
+  s.connect(g);
+  g.connect(masterGain);
   s.start();
 }
 
-/* ===== METRÓNOMO (FIX OPERA) ===== */
+/* ===== METRÓNOMO (OPERA SAFE) ===== */
 function playMetro(step){
   if(!metroOn) return;
   if(GRID[step]==="y") return;
 
-  const o=ctx.createOscillator();
-  const g=ctx.createGain();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
 
   const isOne = GRID[step]==="1";
-  o.frequency.value = isOne ? 1400 : 800;
+  o.frequency.value = isOne ? 1600 : 900;
+  g.gain.value = isOne ? 0.6 : 0.4;
 
-  /* 🔧 Ganancia mayor para Opera */
-  g.gain.value = isOne ? 0.5 : 0.35;
-
-  o.connect(g).connect(ctx.destination);
+  o.connect(g);
+  g.connect(masterGain);
   o.start();
-  o.stop(ctx.currentTime + 0.07); // 🔧 click más largo
+  o.stop(ctx.currentTime + 0.08);
 }
 
 /* ===== LOOP ===== */
 function tick(){
   renderStep(step);
-  const p=currentMap[step];
+  const p = currentMap[step];
   if(p) play(p.t==="down"?downBuf:upBuf,p.g);
   playMetro(step);
-  step=(step+1)%8;
+  step = (step+1)%8;
 }
 
 async function togglePlay(){
