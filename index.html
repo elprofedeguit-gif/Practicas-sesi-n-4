@@ -27,7 +27,7 @@ body{
   padding-top:60px;
 }
 
-/* ================= HEADER ================= */
+/* ===== HEADER ===== */
 .header{
   display:flex;
   flex-direction:column;
@@ -49,18 +49,17 @@ h1{
   margin-top:6px;
 }
 
-/* ================= CONTAINER ================= */
+/* ===== CONTAINER ===== */
 .container{
   width:100%;
   max-width:520px;
   text-align:center;
 }
 
-/* ================= BOTONES ================= */
+/* ===== BOTONES ===== */
 button{
   transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
-
 button:active{
   transform: scale(0.96) translateY(1px);
 }
@@ -96,28 +95,22 @@ button.metro{
   font-size:15px;
   border-radius:12px;
 }
-
 button.metro.active{
   background:var(--green);
   color:#000;
 }
 
-.section{
-  display:none;
-}
+.section{ display:none; }
 
-/* ================= TITULO EJERCICIO ================= */
+/* ===== TITULO EJERCICIO ===== */
 .exercise-title{
   font-size:20px;
   font-weight:600;
   margin-bottom:18px;
 }
 
-/* ================= GRILLA ================= */
-.rows{
-  margin:26px 0;
-}
-
+/* ===== GRILLA ===== */
+.rows{ margin:26px 0; }
 .row{
   display:flex;
   justify-content:space-between;
@@ -125,13 +118,11 @@ button.metro.active{
   max-width:90vw;
   margin:6px auto;
 }
-
 .time{
   width:40px;
   font-size:22px;
   opacity:.25;
 }
-
 .arrow{
   width:40px;
   height:40px;
@@ -139,17 +130,15 @@ button.metro.active{
   font-size:32px;
   opacity:.15;
 }
-
 .arrow.down{ color:var(--green); }
 .arrow.up{ color:var(--violet); }
-
 .active{
   opacity:1;
   transform:scale(1.2);
   text-shadow:0 0 10px currentColor;
 }
 
-/* ================= CONTROLES ================= */
+/* ===== CONTROLES ===== */
 .controls{
   margin-top:20px;
   display:flex;
@@ -157,7 +146,6 @@ button.metro.active{
   align-items:center;
   gap:18px;
 }
-
 input[type=range]{
   width:300px;
   max-width:90vw;
@@ -169,20 +157,20 @@ input[type=range]{
 <body>
 <div class="page">
 
-<!-- ================= HEADER ================= -->
+<!-- ===== HEADER ===== -->
 <div class="header">
   <img src="https://static.wixstatic.com/media/b4a607_0927246f3864402c8d6d2d56723b8bba~mv2.png">
   <h1>Zona de Práctica – Sesión 4 ⭐</h1>
   <div class="subtitle">El motor ya está en marcha</div>
 </div>
 
-<!-- ================= MENU ================= -->
+<!-- ===== MENU ===== -->
 <div class="container" id="menu">
   <button class="menu-btn" onclick="openExercise('basic')">▶ Rasgueo Inicial (Básico)</button>
   <button class="menu-btn" onclick="openExercise('pop')">▶ Rasgueo POP / Rock</button>
 </div>
 
-<!-- ================= EJERCICIO ================= -->
+<!-- ===== EJERCICIO ===== -->
 <div class="container section" id="exercise">
   <div class="exercise-title" id="exerciseTitle"></div>
 
@@ -289,21 +277,23 @@ function play(buf,g){
   s.start();
 }
 
-/* ===== METRÓNOMO ===== */
+/* ===== METRÓNOMO (FIX OPERA) ===== */
 function playMetro(step){
   if(!metroOn) return;
   if(GRID[step]==="y") return;
 
   const o=ctx.createOscillator();
   const g=ctx.createGain();
-  const isOne = GRID[step]==="1";
 
+  const isOne = GRID[step]==="1";
   o.frequency.value = isOne ? 1400 : 800;
-  g.gain.value = isOne ? 0.35 : 0.2;
+
+  /* 🔧 Ganancia mayor para Opera */
+  g.gain.value = isOne ? 0.5 : 0.35;
 
   o.connect(g).connect(ctx.destination);
   o.start();
-  o.stop(ctx.currentTime+0.04);
+  o.stop(ctx.currentTime + 0.07); // 🔧 click más largo
 }
 
 /* ===== LOOP ===== */
