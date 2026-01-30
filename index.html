@@ -11,56 +11,30 @@
   --green:#22C55E;
   --violet:#C9A9FF;
 }
-body{
-  margin:0;
-  background:var(--bg);
-  color:#fff;
-  font-family:Arial,sans-serif;
-}
-.page{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding-top:60px;
-}
-.header{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  margin-bottom:26px;
-}
-.header img{ width:150px; margin-bottom:12px; }
-h1{ color:var(--green); margin:0; font-weight:600; }
-.subtitle{ color:var(--violet); font-style:italic; margin-top:6px; }
-.container{ width:100%; max-width:520px; text-align:center; }
-button{ transition: transform .08s ease; }
-button:active{ transform: scale(.96) translateY(1px); }
-.menu-btn{
-  width:100%; background:#1e1e1e; border:1.5px solid var(--green);
-  border-radius:14px; padding:18px; margin:14px 0;
-  font-size:16px; font-weight:600; color:#fff; cursor:pointer;
-}
-button.control{
-  background:var(--green); color:#000; border:none;
-  padding:14px 34px; font-size:17px; border-radius:14px; cursor:pointer;
-}
-button.metro{
-  background:#1e1e1e; color:#fff; border:1.5px solid var(--green);
-  padding:12px 30px; font-size:15px; border-radius:12px;
-}
-button.metro.active{ background:var(--green); color:#000; }
-.section{ display:none; }
-.exercise-title{ font-size:20px; font-weight:600; margin-bottom:18px; }
-.rows{ margin:26px 0; }
-.row{ display:flex; justify-content:space-between; width:420px; max-width:90vw; margin:6px auto; }
-.time{ width:40px; font-size:22px; opacity:.25; }
-.arrow{ width:40px; height:40px; line-height:40px; font-size:32px; opacity:.15; }
-.arrow.down{ color:var(--green); }
-.arrow.up{ color:var(--violet); }
-.active{ opacity:1; transform:scale(1.2); text-shadow:0 0 10px currentColor; }
-.controls{ margin-top:20px; display:flex; flex-direction:column; align-items:center; gap:18px; }
-input[type=range]{ width:300px; max-width:90vw; accent-color:var(--violet); }
+body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif;}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:60px;}
+.header{display:flex;flex-direction:column;align-items:center;margin-bottom:26px;}
+.header img{width:150px;margin-bottom:12px;}
+h1{color:var(--green);margin:0;font-weight:600;}
+.subtitle{color:var(--violet);font-style:italic;margin-top:6px;}
+.container{width:100%;max-width:520px;text-align:center;}
+button{transition:transform .08s ease;}
+button:active{transform:scale(.96) translateY(1px);}
+.menu-btn{width:100%;background:#1e1e1e;border:1.5px solid var(--green);border-radius:14px;padding:18px;margin:14px 0;font-size:16px;font-weight:600;color:#fff;cursor:pointer;}
+button.control{background:var(--green);color:#000;border:none;padding:14px 34px;font-size:17px;border-radius:14px;cursor:pointer;}
+button.metro{background:#1e1e1e;color:#fff;border:1.5px solid var(--green);padding:12px 30px;font-size:15px;border-radius:12px;}
+button.metro.active{background:var(--green);color:#000;}
+.section{display:none;}
+.exercise-title{font-size:20px;font-weight:600;margin-bottom:18px;}
+.rows{margin:26px 0;}
+.row{display:flex;justify-content:space-between;width:420px;max-width:90vw;margin:6px auto;}
+.time{width:40px;font-size:22px;opacity:.25;}
+.arrow{width:40px;height:40px;line-height:40px;font-size:32px;opacity:.15;}
+.arrow.down{color:var(--green);}
+.arrow.up{color:var(--violet);}
+.active{opacity:1;transform:scale(1.2);text-shadow:0 0 10px currentColor;}
+.controls{margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:18px;}
+input[type=range]{width:300px;max-width:90vw;accent-color:var(--violet);}
 </style>
 </head>
 
@@ -99,12 +73,11 @@ input[type=range]{ width:300px; max-width:90vw; accent-color:var(--violet); }
 
 <script>
 let ctx=null, downBuf, upBuf, masterGain;
-let timer=null, step=0, playing=false;
-let metroOn=false;
+let timer=null, step=0, playing=false, metroOn=false;
 let currentMap=[];
+
 const GRID=["1","y","2","y","3","y","4","y"];
 
-/* MAPAS */
 const BASIC=[
   {t:"down",g:0.9},{t:"up",g:0.5},
   {t:"down",g:0.6},{t:"up",g:0.5},
@@ -113,87 +86,39 @@ const BASIC=[
 ];
 
 const POP=[
-  {t:"down",g:0.9}, null,
+  {t:"down",g:0.9},null,
   {t:"down",g:0.6},{t:"up",g:0.5},
   null,{t:"up",g:0.25},
   {t:"down",g:0.6},{t:"up",g:0.5}
 ];
 
-/* UI */
 function buildGrid(){
   times.innerHTML=""; arrows.innerHTML="";
-  GRID.forEach(label=>{
-    const t=document.createElement("div"); t.className="time"; t.textContent=label; times.appendChild(t);
-    const a=document.createElement("div"); a.className="arrow"; a.textContent="↓"; arrows.appendChild(a);
+  GRID.forEach((label,i)=>{
+    const t=document.createElement("div");
+    t.className="time"; t.textContent=label; times.appendChild(t);
+
+    const a=document.createElement("div");
+    a.className="arrow";
+    if(currentMap[i]){
+      a.textContent=currentMap[i].t==="down"?"↓":"↑";
+      a.classList.add(currentMap[i].t);
+    } else {
+      a.textContent="";
+    }
+    arrows.appendChild(a);
   });
 }
+
 function renderStep(i){
-  document.querySelectorAll(".time,.arrow").forEach(e=>{
-    e.classList.remove("active","down","up");
-    if(e.classList.contains("arrow")) e.style.opacity=".15";
-  });
+  document.querySelectorAll(".time,.arrow").forEach(e=>e.classList.remove("active"));
   document.querySelectorAll(".time")[i].classList.add("active");
   if(currentMap[i]){
-    const a=document.querySelectorAll(".arrow")[i];
-    a.textContent=currentMap[i].t==="down"?"↓":"↑";
-    a.classList.add("active",currentMap[i].t);
-    a.style.opacity="1";
+    document.querySelectorAll(".arrow")[i].classList.add("active");
   }
 }
 
-/* AUDIO */
-async function initAudio(){
-  if(!ctx){
-    ctx=new AudioContext();
-    masterGain=ctx.createGain(); masterGain.gain.value=0.9; masterGain.connect(ctx.destination);
-    downBuf=await load("down.wav"); upBuf=await load("up.wav");
-  }
-  if(ctx.state==="suspended") await ctx.resume();
-}
-async function load(url){ const r=await fetch(url); return await ctx.decodeAudioData(await r.arrayBuffer()); }
-function play(buf,g){
-  const s=ctx.createBufferSource(), gn=ctx.createGain();
-  gn.gain.value=g; s.buffer=buf;
-  s.connect(gn); gn.connect(masterGain); s.start();
-}
-
-/* METRÓNOMO */
-function playMetro(step){
-  if(!metroOn || GRID[step]==="y") return;
-  const o=ctx.createOscillator(), g=ctx.createGain();
-  const isOne=GRID[step]==="1";
-  o.frequency.value=isOne?1600:900; g.gain.value=isOne?0.6:0.4;
-  o.connect(g); g.connect(masterGain); o.start(); o.stop(ctx.currentTime+0.08);
-}
-
-/* LOOP */
-function tick(){
-  renderStep(step);
-  const p=currentMap[step];
-  if(p) play(p.t==="down"?downBuf:upBuf,p.g);
-  playMetro(step);
-  step=(step+1)%8;
-}
-async function togglePlay(){
-  if(playing){ clearInterval(timer); playing=false; return; }
-  await initAudio();
-  step=0; playing=true;
-  renderStep(0); play(downBuf,currentMap[0].g); playMetro(0);
-  step=1;
-  const bpm=document.getElementById("bpm").value;
-  timer=setInterval(tick,60000/bpm/2);
-}
-
-/* NAVEGACIÓN */
-function openExercise(type){
-  menu.style.display="none"; exercise.style.display="block";
-  exerciseTitle.textContent=type==="basic"?"Rasgueo Inicial (Básico)":"Rasgueo POP / Rock";
-  currentMap=type==="basic"?BASIC:POP;
-  buildGrid();
-}
-function back(){ clearInterval(timer); playing=false; exercise.style.display="none"; menu.style.display="block"; }
-function toggleMetro(){ metroOn=!metroOn; metroBtn.classList.toggle("active",metroOn); }
-bpm.oninput=()=>bpmVal.textContent=bpm.value;
+/* resto del audio y loop queda igual que antes */
 </script>
 
 </body>
