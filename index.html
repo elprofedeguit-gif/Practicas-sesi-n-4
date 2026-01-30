@@ -92,6 +92,21 @@ const POP=[
   {t:"down",g:0.6},{t:"up",g:0.5}
 ];
 
+function openExercise(type){
+  menu.style.display="none";
+  exercise.style.display="block";
+  currentMap = type==="basic"?BASIC:POP;
+  exerciseTitle.textContent = type==="basic" ? "Rasgueo Inicial (Básico)" : "Rasgueo POP / Rock";
+  buildGrid();
+}
+
+function back(){
+  clearInterval(timer);
+  playing=false;
+  exercise.style.display="none";
+  menu.style.display="block";
+}
+
 function buildGrid(){
   times.innerHTML=""; arrows.innerHTML="";
   GRID.forEach((label,i)=>{
@@ -103,9 +118,7 @@ function buildGrid(){
     if(currentMap[i]){
       a.textContent=currentMap[i].t==="down"?"↓":"↑";
       a.classList.add(currentMap[i].t);
-    } else {
-      a.textContent="";
-    }
+    } else a.textContent="";
     arrows.appendChild(a);
   });
 }
@@ -113,12 +126,60 @@ function buildGrid(){
 function renderStep(i){
   document.querySelectorAll(".time,.arrow").forEach(e=>e.classList.remove("active"));
   document.querySelectorAll(".time")[i].classList.add("active");
-  if(currentMap[i]){
-    document.querySelectorAll(".arrow")[i].classList.add("active");
-  }
+  if(currentMap[i]) document.querySelectorAll(".arrow")[i].classList.add("active");
 }
 
-/* resto del audio y loop queda igual que antes */
+async function initAudio(){
+  if(!ctx){
+    ctx=new AudioContext();
+    masterGain=ctx.createGain(); masterGain.gain.value=0.9; masterGain.connect(ctx.destination);
+    downBuf=await load("down.wav"); upBuf=await load("up.wav");
+  }
+  if(ctx.state==="suspended") await ctx.resume();
+}
+
+async function load(url){
+  const r=await fetch(url);
+  return await ctx.decodeAudioData(await r.arrayBuffer());
+}
+
+function play(buf,g){
+  const s=ctx.createBufferSource(), gn=ctx.createGain();
+  gn.gain.value=g; s.buffer=buf;
+  s.connect(gn); gn.connect(masterGain); s.start();
+}
+
+function playMetro(step){
+  if(!metroOn || GRID[step]==="y") return;
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  const isOne=GRID[step]==="1";
+  o.frequency.value=isOne?1600:900; g.gain.value=isOne?0.6:0.4;
+  o.connect(g); g.connect(masterGain); o.start(); o.stop(ctx.currentTime+0.08);
+}
+
+function tick(){
+  renderStep(step);
+  const p=currentMap[step];
+  if(p) play(p.t==="down"?downBuf:upBuf,p.g);
+  playMetro(step);
+  step=(step+1)%8;
+}
+
+async function togglePlay(){
+  if(playing){ clearInterval(timer); playing=false; return; }
+  await initAudio();
+  step=0; playing=true;
+  renderStep(0); play(downBuf,currentMap[0].g); playMetro(0);
+  step=1;
+  const bpm=document.getElementById("bpm").value;
+  timer=setInterval(tick,60000/bpm/2);
+}
+
+function toggleMetro(){
+  metroOn=!metroOn;
+  metroBtn.classList.toggle("active",metroOn);
+}
+bpm.oninput=()=>bpmVal.textContent=bpm.value;
 </script>
 
 </body>
